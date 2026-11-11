@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Virtual environment (recreate with: python -m venv .venv)
+.venv/
+venv/
+
+# Large files: model weights (download_models.py) and offline wheel bundles
+models/
+wheels/
+*.zip
+
+# Editor / OS
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
