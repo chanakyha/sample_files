@@ -12,6 +12,12 @@ models/
 wheels/
 *.zip
 
+# .NET build output
+bin/
+obj/
+.vs/
+*.user
+
 # Editor / OS
 .vscode/
 .idea/

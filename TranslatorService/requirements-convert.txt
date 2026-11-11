@@ -1,0 +1,5 @@
+# Only needed once, to run download_models.py (download + convert the model)
+-r requirements.txt
+torch>=2.2
+safetensors>=0.4
+huggingface_hub>=0.23
