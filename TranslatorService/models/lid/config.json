@@ -1,0 +1,44 @@
+{
+  "languages": [
+    "bg",
+    "cs",
+    "da",
+    "de",
+    "el",
+    "en",
+    "es",
+    "et",
+    "fi",
+    "fr",
+    "ga",
+    "hr",
+    "hu",
+    "it",
+    "lt",
+    "lv",
+    "mt",
+    "nl",
+    "pl",
+    "pt",
+    "ro",
+    "sk",
+    "sl",
+    "sv"
+  ],
+  "buckets": 1048576,
+  "dim": 32,
+  "max_n": 4,
+  "min_n": 2,
+  "word_weight": 2,
+  "prior": {
+    "en": 1.5,
+    "es": 1.5,
+    "fr": 1.5
+  },
+  "held_out_accuracy": 0.9867,
+  "eval_accuracy": {
+    "lid_challenge": 0.993,
+    "lid_everyday": 0.98,
+    "lid_everyday2": 0.9857
+  }
+}

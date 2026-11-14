@@ -1,0 +1,12 @@
+model: {'step': 18538, 'dev_bleu': 24.26, 'dev_bleu_per_direction': {'en-es': 23.0, 'en-fr': 21.8, 'es-en': 30.7, 'es-fr': 22.8, 'fr-en': 24.3, 'fr-es': 23.0}, 'hours': 14.7}  beam 4
+
+direction  corpus              n   BLEU   chrF
+en->es      Domain             45   33.6   57.8
+en->fr      Domain             45   38.9   61.8
+es->en      Domain             45   39.2   54.8
+es->fr      Domain             45   33.9   60.8
+fr->en      Domain             45   42.6   59.0
+fr->es      Domain             45   27.8   56.5
+
+Domain          BLEU 36.8  chrF 58.5  (270 sentences)
+all: BLEU 36.8  chrF 58.5  (270 sentences in 11s)

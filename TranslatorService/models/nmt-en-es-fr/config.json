@@ -1,0 +1,34 @@
+{
+  "model": {
+    "vocab_size": 16000,
+    "d_model": 256,
+    "heads": 4,
+    "ff": 1024,
+    "enc_layers": 6,
+    "dec_layers": 2,
+    "dropout": 0.1,
+    "max_positions": 1024,
+    "pad_id": 0,
+    "unk_id": 1,
+    "bos_id": 2,
+    "eos_id": 3
+  },
+  "languages": [
+    "en",
+    "es",
+    "fr"
+  ],
+  "training": {
+    "step": 24486,
+    "dev_bleu": 25.92,
+    "dev_bleu_per_direction": {
+      "en-es": 24.1,
+      "en-fr": 24.1,
+      "es-en": 35.3,
+      "es-fr": 23.1,
+      "fr-en": 24.5,
+      "fr-es": 24.4
+    },
+    "hours": 18.12
+  }
+}

@@ -1,0 +1,4 @@
+# Extra packages for the training scripts in training/
+-r requirements.txt
+sacrebleu>=2.4     # BLEU score for evaluating translations
+truststore>=0.9    # HTTPS downloads verified with the Windows certificate store

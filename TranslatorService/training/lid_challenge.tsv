@@ -1,0 +1,143 @@
+short	de	Das ist gut.
+short	de	Vielen Dank!
+short	de	Guten Morgen.
+short	de	Wie geht es dir?
+short	en	Thank you.
+short	en	Good morning.
+short	en	See you soon.
+short	en	It is ready.
+short	fr	Merci beaucoup.
+short	fr	C'est bon.
+short	fr	Bonjour à tous.
+short	es	Muchas gracias.
+short	es	Buenos días.
+short	es	Está listo.
+short	it	Grazie mille.
+short	it	Va bene.
+short	pt	Muito obrigado.
+short	pt	Bom dia.
+short	nl	Dank je wel.
+short	nl	Goedemorgen.
+short	sv	Tack så mycket.
+short	da	Tak for hjælpen.
+short	pl	Dziękuję bardzo.
+short	cs	Děkuji moc.
+short	sk	Ďakujem pekne.
+short	hr	Hvala lijepa.
+short	sl	Hvala lepa.
+short	ro	Mulțumesc frumos.
+short	hu	Köszönöm szépen.
+short	fi	Kiitos paljon.
+short	et	Aitäh väga.
+short	lv	Liels paldies.
+short	lt	Labai ačiū.
+short	el	Ευχαριστώ πολύ.
+short	bg	Благодаря много.
+short	mt	Grazzi ħafna.
+short	ga	Go raibh maith agat.
+sentence	bg	Колата има нужда от нова батерия.
+sentence	cs	Auto potřebuje novou baterii.
+sentence	da	Bilen har brug for et nyt batteri.
+sentence	de	Das Auto braucht eine neue Batterie.
+sentence	el	Το αυτοκίνητο χρειάζεται νέα μπαταρία.
+sentence	en	The car needs a new battery.
+sentence	es	El coche necesita una batería nueva.
+sentence	et	Auto vajab uut akut.
+sentence	fi	Auto tarvitsee uuden akun.
+sentence	fr	La voiture a besoin d'une nouvelle batterie.
+sentence	ga	Teastaíonn ceallra nua ón gcarr.
+sentence	hr	Automobilu treba novi akumulator.
+sentence	hu	Az autónak új akkumulátorra van szüksége.
+sentence	it	La macchina ha bisogno di una batteria nuova.
+sentence	lt	Automobiliui reikia naujo akumuliatoriaus.
+sentence	lv	Automašīnai vajag jaunu akumulatoru.
+sentence	mt	Il-karozza għandha bżonn batterija ġdida.
+sentence	nl	De auto heeft een nieuwe accu nodig.
+sentence	pl	Samochód potrzebuje nowego akumulatora.
+sentence	pt	O carro precisa de uma bateria nova.
+sentence	ro	Mașina are nevoie de o baterie nouă.
+sentence	sk	Auto potrebuje novú batériu.
+sentence	sl	Avto potrebuje nov akumulator.
+sentence	sv	Bilen behöver ett nytt batteri.
+names	en	hi my name is chanakyha
+names	en	Hi my name is Chanakyha and I live in Chennai.
+names	de	Ich heiße Chanakyha und wohne in Chennai.
+names	fr	Je m'appelle Chanakyha et j'habite à Chennai.
+names	es	Me llamo Chanakyha y vivo en Chennai.
+names	it	Mi chiamo Chanakyha e vivo a Chennai.
+names	pt	Chamo-me Chanakyha e moro em Chennai.
+names	nl	Ik heet Chanakyha en ik woon in Chennai.
+names	sv	Jag heter Chanakyha och bor i Chennai.
+names	da	Jeg hedder Chanakyha og bor i Chennai.
+names	fi	Nimeni on Chanakyha ja asun Chennaissa.
+names	et	Minu nimi on Chanakyha ja ma elan Chennais.
+names	lv	Mani sauc Chanakyha, un es dzīvoju Čennajā.
+names	lt	Mano vardas Chanakyha ir aš gyvenu Čenajuje.
+names	pl	Nazywam się Chanakyha i mieszkam w Chennai.
+names	cs	Jmenuji se Chanakyha a bydlím v Chennai.
+names	sk	Volám sa Chanakyha a bývam v Chennai.
+names	sl	Ime mi je Chanakyha in živim v Chennaiju.
+names	hr	Zovem se Chanakyha i živim u Chennaiju.
+names	hu	A nevem Chanakyha, és Chennaiban élek.
+names	ro	Mă numesc Chanakyha și locuiesc în Chennai.
+names	bg	Казвам се Чанакя и живея в Ченай.
+names	el	Με λένε Τσανάκια και μένω στο Τσενάι.
+names	mt	Jisimni Chanakyha u ngħix f'Chennai.
+names	ga	Is mise Chanakyha agus tá mé i mo chónaí i Chennai.
+names	de	Herr Vetrivel kommt morgen um neun Uhr.
+names	fr	Madame Priya arrive demain à Paris.
+names	es	Mañana llega el señor Ramaswamy a Madrid.
+names	it	Domani arriva il signor Krishnan a Torino.
+names	pl	Jutro przyjeżdża pan Subramanian.
+casual_en	en	hi how are you
+casual_en	en	whats up
+casual_en	en	ok thanks
+casual_en	en	see you tomorrow
+casual_en	en	can you help me
+casual_en	en	i need a car
+casual_en	en	where is the meeting room
+casual_en	en	please send the report by friday
+casual_en	en	my name is ravi kumar
+casual_en	en	call vetri at 5 pm
+casual_en	en	the BMW X5 has a new engine
+casual_en	en	meeting with Priya at 3
+casual_en	en	good night
+casual_en	en	thanks a lot
+casual_en	en	hello
+casual_en	en	yes
+casual_en	en	no problem
+casual_en	en	the Peugeot 208 is ready for delivery
+casual_en	en	Chanakyha will join the TCS team on Monday
+casual_en	en	send it to Stellantis by EOD
+casual_en	en	lol that is funny
+casual_en	en	i am fine
+casual_other	de	bis morgen
+casual_other	de	wie geht's?
+casual_other	de	kein Problem
+casual_other	de	ich komme gleich
+casual_other	fr	à demain
+casual_other	fr	ça va ?
+casual_other	fr	pas de problème
+casual_other	fr	je suis en retard
+casual_other	es	hasta luego
+casual_other	es	¿qué tal?
+casual_other	es	no pasa nada
+casual_other	es	estoy en camino
+casual_other	it	come stai?
+casual_other	it	a domani
+casual_other	it	nessun problema
+casual_other	it	sono in ritardo
+casual_other	pt	até amanhã
+casual_other	pt	tudo bem?
+casual_other	nl	tot morgen
+casual_other	nl	geen probleem
+casual_other	pl	do jutra
+casual_other	pl	nie ma problemu
+casual_other	sv	vi ses imorgon
+casual_other	sv	inga problem
+casual_other	da	vi ses i morgen
+casual_other	fi	nähdään huomenna
+casual_other	cs	uvidíme se zítra
+casual_other	hu	holnap találkozunk
+casual_other	ro	ne vedem mâine
+casual_other	hr	vidimo se sutra

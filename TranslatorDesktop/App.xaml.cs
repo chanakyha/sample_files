@@ -1,7 +1,8 @@
 ﻿using System.Windows;
 
-namespace TranslatorDesktop;
-
-public partial class App : Application
+namespace TranslatorDesktop
 {
+    public partial class App : Application
+    {
+    }
 }

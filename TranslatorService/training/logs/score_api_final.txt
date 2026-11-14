@@ -1,0 +1,26 @@
+﻿6270 sentences in 126 requests through http://127.0.0.1:8000 in 229s (27 sentences/s), instances used: {'api-8004': 35, 'api-8001': 28, 'api-8003': 34, 'api-8002': 29}
+
+corpus          direction     n   BLEU   chrF  detected ok
+Domain          en->es       45   59.6   75.9       97.8%
+Domain          en->fr       45   57.0   74.7       97.8%
+Domain          es->en       45   60.6   74.1      100.0%
+Domain          es->fr       45   57.8   74.2      100.0%
+Domain          fr->en       45   63.6   77.2      100.0%
+Domain          fr->es       45   54.7   74.7      100.0%
+NewsCommentary  en->es      500   26.7   54.0       99.6%
+NewsCommentary  en->fr      500   19.5   48.4       99.8%
+NewsCommentary  es->en      500   24.6   53.7      100.0%
+NewsCommentary  es->fr      500   21.0   50.6       99.8%
+NewsCommentary  fr->en      500   20.6   48.8      100.0%
+NewsCommentary  fr->es      500   22.5   51.5       99.8%
+Tatoeba         en->es      500   35.4   57.6      100.0%
+Tatoeba         en->fr      500   35.6   56.6      100.0%
+Tatoeba         es->en      500   42.0   60.2       99.8%
+Tatoeba         es->fr      500   38.5   58.3       99.8%
+Tatoeba         fr->en      500   41.3   58.3      100.0%
+Tatoeba         fr->es      500   35.2   57.3       99.8%
+
+Domain          BLEU  59.2  chrF  75.1  detection 99.3%  (270 sentences)
+NewsCommentary  BLEU  22.7  chrF  51.2  detection 99.8%  (3000 sentences)
+Tatoeba         BLEU  38.1  chrF  58.0  detection 99.9%  (3000 sentences)
+all             BLEU  26.3  chrF  52.8  detection 99.8%  (6270 sentences)

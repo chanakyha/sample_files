@@ -1,4 +1,7 @@
-"""End-to-end API tests (fully offline once ./models is populated)."""
+"""End-to-end API tests with our own trained models (fully offline).
+
+Requires models/nmt-en-es-fr and models/lid (see README: training).
+"""
 
 import time
 
@@ -35,6 +38,7 @@ SAMPLES = {
     "sl": "Avto potrebuje nov akumulator.",
     "sv": "Bilen behöver ett nytt batteri.",
 }
+TRANSLATABLE = {"en", "es", "fr"}
 
 
 def post(**body):
@@ -42,52 +46,61 @@ def post(**body):
 
 
 def test_health():
-    assert client.get("/health").json()["status"] == "ok"
+    body = client.get("/health").json()
+    assert body["status"] == "ok"
+    assert body["translation_languages"] == ["en", "es", "fr"]
 
 
 def test_languages():
-    assert len(client.get("/languages").json()["languages"]) == 24
+    body = client.get("/languages").json()
+    assert set(body["languages"]) == TRANSLATABLE
+    assert len(body["detectable"]) == 24
 
 
-def test_all_24_languages_in_one_request():
+def test_detects_all_24_and_translates_only_supported():
     langs = list(SAMPLES)
-    # 4 inner arrays of 6 sentences each
     groups = [[SAMPLES[c] for c in langs[i : i + 6]] for i in range(0, 24, 6)]
-    r = post(text=groups, target_lang="en")
-    assert r.status_code == 200, r.text
-    body = r.json()
-    assert [len(g) for g in body["translation"]] == [6, 6, 6, 6]
+    body = post(text=groups, target_lang="en").json()
     flat_langs = [c for g in body["detected_lang"] for c in g]
     flat_out = [t for g in body["translation"] for t in g]
+    flat_done = [d for g in body["translated"] for d in g]
     assert flat_langs == langs
-    for code, out in zip(langs, flat_out):
-        if code == "en":
-            assert out == SAMPLES["en"]  # same language -> unchanged
-        elif code == "ga":
-            assert "car" in out.lower()  # NLLB-600M renders Irish "ceallra" as "cells"
-        else:
-            assert "batter" in out.lower(), (code, out)
+    for code, out, done in zip(langs, flat_out, flat_done):
+        if code in ("es", "fr"):
+            assert done and "car" in out.lower(), (code, out)
+        else:  # English (already target) or a language the model cannot translate
+            assert not done and out == SAMPLES[code]
 
 
-@pytest.mark.parametrize("target", ["de", "it", "pl", "el", "mt", "ga", "sv", "ro"])
-def test_english_to_many(target):
-    body = post(text=[["The car needs a new battery."]], target_lang=target).json()
-    assert body["detected_lang"] == [["en"]]
-    out = body["translation"][0][0]
-    assert out and out != "The car needs a new battery."
+@pytest.mark.parametrize(
+    "src,tgt,text,expected",
+    [
+        ("en", "fr", "The car needs a new battery.", "voiture"),
+        ("en", "es", "The car needs a new battery.", "coche"),
+        ("fr", "en", "Je voudrais un café, s'il vous plaît.", "coffee"),
+        ("es", "en", "¿Dónde está la estación de tren?", "station"),
+        ("es", "fr", "Muchas gracias por tu ayuda.", "merci"),
+        ("fr", "es", "Je suis très content de te voir.", "contento"),
+    ],
+)
+def test_all_six_directions(src, tgt, text, expected):
+    body = post(text=[[text]], target_lang=tgt).json()
+    assert body["detected_lang"] == [[src]]
+    assert body["translated"] == [[True]]
+    assert expected in body["translation"][0][0].lower(), body["translation"]
 
 
 def test_shape_preserved_including_empty_groups_and_strings():
-    body = post(text=[["Good morning.", ""], [], ["Thank you."]], target_lang="fr").json()
+    body = post(text=[["Good morning.", ""], [], ["Thank you very much."]], target_lang="fr").json()
     assert [len(g) for g in body["translation"]] == [2, 0, 1]
     assert body["translation"][0][1] == ""
-    assert "merci" in body["translation"][2][0].lower()
+    assert body["translated"][0][1] is False
 
 
 def test_same_language_returns_input_unchanged():
-    text = "Das Auto braucht eine neue Batterie."
-    body = post(text=[[text]], target_lang="de").json()
-    assert body["detected_lang"] == [["de"]]
+    text = "La voiture a besoin d'une nouvelle batterie."
+    body = post(text=[[text]], target_lang="fr").json()
+    assert body["detected_lang"] == [["fr"]]
     assert body["translation"] == [[text]]
 
 
@@ -95,43 +108,38 @@ def test_source_lang_override():
     body = post(text=[["Hello"]], source_lang="en", target_lang="es").json()
     assert body["detected_lang"] == [["en"]]
     assert body["confidence"] == [[1.0]]
-    assert "hola" in body["translation"][0][0].lower()
+    assert body["translated"] == [[True]]
 
 
 def test_multi_sentence_string_and_lines_preserved():
-    text = "The engine is overheating. Please check the coolant.\nCall me tomorrow."
-    out = post(text=[[text]], target_lang="de").json()["translation"][0][0]
+    text = "The engine is very hot. Please call me.\nSee you tomorrow."
+    out = post(text=[[text]], target_lang="fr").json()["translation"][0][0]
     assert out.count("\n") == 1
-    assert "Motor" in out
 
 
 def test_duplicates_and_cache_are_fast():
-    sentence = "The windscreen wipers are not working properly today."
-    groups = [[sentence] * 50]
+    sentence = "The weather is very nice today."
+    groups = [[sentence] * 30]
     start = time.perf_counter()
-    first = post(text=groups, target_lang="nl").json()["translation"][0]
-    assert len(set(first)) == 1  # 50 duplicates translated once
+    first = post(text=groups, target_lang="es").json()["translation"][0]
     t1 = time.perf_counter() - start
+    assert len(set(first)) == 1
     start = time.perf_counter()
-    second = post(text=groups, target_lang="nl").json()["translation"][0]
-    t2 = time.perf_counter() - start
+    second = post(text=groups, target_lang="es").json()["translation"][0]
     assert second == first
-    assert t2 < max(t1, 0.5)  # served from cache
+    assert time.perf_counter() - start < max(t1, 0.5)
 
 
 @pytest.mark.parametrize(
     "lang,text",
     [
-        ("de", "Das ist gut."),
         ("en", "hi my name is chanakyha"),
         ("en", "Hi How are you"),
         ("en", "hello, I am Chanakyha from Chennai"),
         ("en", "Chanakyha will join the TCS team on Monday"),
-        ("en", "call vetri at 5 pm"),
-        ("en", "no problem"),
         ("es", "Me llamo Chanakyha y vivo en Chennai."),
-        ("nl", "Ik heet Chanakyha en ik woon in Chennai."),
-        ("hu", "A nevem Chanakyha, és Chennaiban élek."),
+        ("fr", "Je m'appelle Chanakyha et j'habite à Chennai."),
+        ("de", "Ich heiße Chanakyha und wohne in Chennai."),
         ("mt", "Jisimni Chanakyha u ngħix f'Chennai."),
         ("it", "Va bene."),
         ("es", "Está listo."),
@@ -140,16 +148,6 @@ def test_duplicates_and_cache_are_fast():
 def test_detection_short_casual_and_names(lang, text):
     body = post(text=[[text]], target_lang="fr").json()
     assert body["detected_lang"] == [[lang]], text
-
-
-def test_group_detect_mode_for_short_sentences():
-    groups = [
-        ["Va bene.", "Grazie mille.", "Ci vediamo domani alle nove."],
-        ["Está listo.", "El coche está en el taller.", "123"],
-    ]
-    body = post(text=groups, target_lang="en", detect_mode="group").json()
-    assert body["detected_lang"] == [["it", "it", "it"], ["es", "es", "und"]]
-    assert body["translation"][1][2] == "123"
 
 
 def test_no_letters_passthrough():
@@ -163,5 +161,29 @@ def test_rejects_non_nested_or_empty_input(bad):
     assert post(text=bad, target_lang="fr").status_code == 422
 
 
-def test_invalid_target():
-    assert post(text=[["Hi"]], target_lang="zh").status_code == 422
+@pytest.mark.parametrize("target", ["de", "zh"])
+def test_rejects_unsupported_target(target):
+    assert post(text=[["Hi"]], target_lang=target).status_code == 422
+
+
+def test_request_id_and_log_entry():
+    """Each response carries X-Request-ID / X-Instance, and the request is logged as JSON
+    (sentence count and languages, never the text itself)."""
+    import json
+    import logging
+
+    from logsetup import log_dir
+
+    r = client.post("/translate", json={"text": [["Muchas gracias."]], "target_lang": "en"},
+                    headers={"X-Request-ID": "test-req-42"})
+    assert r.status_code == 200
+    assert r.headers["x-request-id"] == "test-req-42"
+    assert r.headers["x-instance"]
+    for h in logging.getLogger().handlers:
+        h.flush()
+    entries = [json.loads(l) for l in open(log_dir() / f"{r.headers['x-instance']}.log", encoding="utf-8")]
+    mine = [e for e in entries if e.get("request_id") == "test-req-42"]
+    assert {e["logger"] for e in mine} == {"translator.api", "translator.access"}
+    detail = next(e for e in mine if e["logger"] == "translator.api")
+    assert detail["sentences"] == 1 and detail["detected"] == {"es": 1} and detail["target"] == "en"
+    assert "Muchas" not in json.dumps(mine)

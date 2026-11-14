@@ -1,25 +1,17 @@
-"""Fast offline many-to-many translation between the 24 EU languages.
+"""Offline translation with our own Transformer model (trained by training/train_nmt.py).
 
-Model: facebook/nllb-200-distilled-600M converted to CTranslate2 with int8 weights
-(~600 MB). CTranslate2 is a C++ inference engine that runs several batches in parallel
-on separate CPU threads (inter_threads), each using intra_threads cores, without the
-Python GIL. Compared with plain PyTorch on CPU this is roughly 5-13x faster.
+The model lives in models/nmt-en-es-fr/ (model.pt, spm.model, config.json); override the
+base folder with TRANSLATOR_MODEL_DIR. Nothing is downloaded at runtime.
 
-Speed-ups applied to every request:
-  * all sentences of a request are translated in one batched call, sorted by length
-    to minimise padding, and split across parallel worker threads
-  * duplicate sentences are translated only once
-  * an in-memory LRU cache returns repeated sentences instantly
-
-The model is loaded only from a local folder (default ./models, override with
-TRANSLATOR_MODEL_DIR); no network access is attempted. Run `python download_models.py`
-once to create it.
-
-NOTE: NLLB-200 is licensed CC-BY-NC 4.0 (non-commercial use only).
+Speed-ups:
+  * all sentences of a request are sorted by length and translated in batches
+  * duplicate sentences are translated once; an LRU cache returns repeats instantly
+  * incremental decoding with a key/value cache (translator/nmt.py)
 """
 
 from __future__ import annotations
 
+import json
 import logging
 import os
 import re
@@ -27,25 +19,17 @@ import threading
 from collections import OrderedDict
 from pathlib import Path
 
-# Force Hugging Face libraries into offline mode before they are imported.
-os.environ.setdefault("HF_HUB_OFFLINE", "1")
-os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
-os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")
+import sentencepiece as spm
+import torch
 
-import ctranslate2  # noqa: E402
-from transformers import AutoTokenizer  # noqa: E402
-from transformers import logging as hf_logging  # noqa: E402
+from .nmt import NMTConfig, TransformerNMT
 
-from .languages import LANGUAGES  # noqa: E402
-
-hf_logging.set_verbosity_error()
 logger = logging.getLogger(__name__)
 
-MODEL_NAME = "facebook/nllb-200-distilled-600M"
-MODEL_FOLDER = "nllb-200-distilled-600M-ct2"
+MODEL_FOLDER = "nmt-en-es-fr"
 DEFAULT_MODEL_DIR = Path(__file__).resolve().parent.parent / "models"
 
-# NLLB is trained on single sentences; long paragraphs get truncated or summarised.
+# The model is trained on single sentences; split paragraphs before translating.
 _SENTENCE_SPLIT = re.compile(r"(?<=[.!?;:])\s+")
 
 
@@ -60,29 +44,6 @@ def local_model_path(base: str | os.PathLike | None = None) -> Path:
 def _env_int(name: str, default: int) -> int:
     value = os.getenv(name)
     return int(value) if value else default
-
-
-_GPU_FAST_TYPES = ("int8_float16", "int8_bfloat16", "float16")
-
-
-def _gpu_types() -> set[str]:
-    try:
-        if ctranslate2.get_cuda_device_count() > 0:
-            return set(ctranslate2.get_supported_compute_types("cuda"))
-    except Exception:  # no CUDA runtime
-        pass
-    return set()
-
-
-def _best_gpu_compute_type() -> str:
-    types = _gpu_types()
-    return next((t for t in _GPU_FAST_TYPES if t in types), "float32")
-
-
-def _best_device() -> str:
-    # Use the GPU only if it supports fast reduced precision; old GPUs that only do
-    # float32 (e.g. compute capability < 6.1) are slower than int8 on the CPU.
-    return "cuda" if _gpu_types() & set(_GPU_FAST_TYPES) else "cpu"
 
 
 class UnsupportedLanguage(ValueError):
@@ -122,45 +83,38 @@ class _LRUCache:
 
 
 class Translator:
-    """Thread-safe: concurrent requests share the CTranslate2 worker pool."""
-
     def __init__(
         self,
         models_path: str | os.PathLike | None = None,
-        device: str | None = None,
-        compute_type: str | None = None,
-        inter_threads: int | None = None,
-        intra_threads: int | None = None,
         beam_size: int | None = None,
-        max_batch_size: int | None = None,
+        batch_size: int | None = None,
+        threads: int | None = None,
         cache_size: int | None = None,
-        max_length: int = 512,
     ):
-        cpus = os.cpu_count() or 4
-        self.device = device or os.getenv("TRANSLATOR_DEVICE") or _best_device()
-        on_gpu = self.device == "cuda"
-        self.compute_type = compute_type or os.getenv("TRANSLATOR_COMPUTE_TYPE") or (
-            _best_gpu_compute_type() if on_gpu else "int8"
-        )
-        # Default CPU layout: parallel workers of 2 cores each (fastest in benchmarks).
-        self.intra_threads = intra_threads or _env_int("TRANSLATOR_INTRA_THREADS", 2)
-        self.inter_threads = inter_threads or _env_int(
-            "TRANSLATOR_INTER_THREADS", 1 if on_gpu else max(1, cpus // self.intra_threads)
-        )
-        self.beam_size = beam_size or _env_int("TRANSLATOR_BEAM_SIZE", 2)
-        self.max_batch_size = max_batch_size or _env_int("TRANSLATOR_MAX_BATCH_SIZE", 16)
-        self.max_length = max_length
         self.path = local_model_path(models_path)
+        self.device = "cpu"
+        self.beam_size = beam_size or _env_int("TRANSLATOR_BEAM_SIZE", 4)
+        self.batch_size = batch_size or _env_int("TRANSLATOR_BATCH_SIZE", 32)
+        self.threads = threads or _env_int("TRANSLATOR_THREADS", max(1, (os.cpu_count() or 4) // 2))
         self._cache = _LRUCache(
             cache_size if cache_size is not None else _env_int("TRANSLATOR_CACHE_SIZE", 20000)
         )
-        self._model: ctranslate2.Translator | None = None
-        self._tokenizer = None
-        self._load_lock = threading.Lock()
+        self._model: TransformerNMT | None = None
+        self._sp: spm.SentencePieceProcessor | None = None
+        self._lock = threading.Lock()
+        self.info: dict = {}
+        self.languages: list[str] = self._read_languages()
+
+    def _read_languages(self) -> list[str]:
+        try:
+            with open(self.path / "config.json", encoding="utf-8") as f:
+                return json.load(f)["languages"]
+        except (OSError, KeyError, ValueError):
+            return ["en", "es", "fr"]
 
     @property
     def installed(self) -> bool:
-        return (self.path / "model.bin").is_file()
+        return all((self.path / f).is_file() for f in ("model.pt", "spm.model", "config.json"))
 
     @property
     def loaded(self) -> bool:
@@ -169,66 +123,62 @@ class Translator:
     def load(self) -> None:
         if self._model is not None:
             return
-        with self._load_lock:
+        with self._lock:
             if self._model is not None:
                 return
             if not self.installed:
                 raise ModelNotFound(
                     f"Translation model not found at {self.path}. "
-                    "Run 'python download_models.py' once on a machine with internet."
+                    "Train it with the scripts in training/ (see README)."
                 )
-            logger.info(
-                "Loading %s on %s (%s, %d workers x %d threads)",
-                self.path, self.device, self.compute_type, self.inter_threads, self.intra_threads,
-            )
-            self._tokenizer = AutoTokenizer.from_pretrained(self.path, local_files_only=True)
-            self._model = ctranslate2.Translator(
-                str(self.path),
-                device=self.device,
-                compute_type=self.compute_type,
-                inter_threads=self.inter_threads,
-                intra_threads=self.intra_threads,
-            )
-
-    def _encode(self, sentence: str, source: str) -> list[str]:
-        # NLLB source format: [src_lang] tokens </s>  (built manually so the shared
-        # tokenizer is never mutated and stays safe across threads)
-        tokens = self._tokenizer.tokenize(sentence)[: self.max_length - 2]
-        return [LANGUAGES[source][1], *tokens, "</s>"]
+            torch.set_num_threads(self.threads)
+            with open(self.path / "config.json", encoding="utf-8") as f:
+                cfg = json.load(f)
+            self.info = cfg.get("training", {})
+            self.languages = cfg["languages"]
+            model = TransformerNMT(NMTConfig(**cfg["model"]))
+            state = torch.load(self.path / "model.pt", map_location="cpu", weights_only=True)
+            model.load_state_dict({k: v.float() for k, v in state.items()})
+            model.eval()
+            self._sp = spm.SentencePieceProcessor(model_file=str(self.path / "spm.model"))
+            self._tags = {l: self._sp.piece_to_id(f"<2{l}>") for l in self.languages}
+            self._model = model
+            logger.info("Loaded %s (%s, beam %d, %d threads)",
+                        self.path, self.info, self.beam_size, self.threads)
 
     def _translate_sentences(self, pairs: list[tuple[str, str]], target: str) -> dict:
         """pairs: unique (source_lang, sentence). Returns {(source, sentence): translation}."""
-        tgt_code = LANGUAGES[target][1]
-        results = self._model.translate_batch(
-            [self._encode(sentence, src) for src, sentence in pairs],
-            target_prefix=[[tgt_code]] * len(pairs),
-            beam_size=self.beam_size,
-            max_batch_size=self.max_batch_size,
-            max_input_length=self.max_length,
-            max_decoding_length=self.max_length,
-        )
-        tok = self._tokenizer
-        out = {}
-        for pair, res in zip(pairs, results):
-            hyp = res.hypotheses[0]
-            if hyp and hyp[0] == tgt_code:
-                hyp = hyp[1:]
-            out[pair] = tok.decode(tok.convert_tokens_to_ids(hyp), skip_special_tokens=True)
+        c = self._model.config
+        tag = self._tags[target]
+        encoded = self._sp.encode([s for _, s in pairs])
+        rows = [[tag] + ids[: c.max_positions // 2 - 2] + [c.eos_id] for ids in encoded]
+        order = sorted(range(len(rows)), key=lambda i: len(rows[i]))  # less padding
+        banned = list(self._tags.values())
+        out: dict = {}
+        with self._lock:
+            for i in range(0, len(order), self.batch_size):
+                chunk = order[i : i + self.batch_size]
+                width = max(len(rows[j]) for j in chunk)
+                src = torch.tensor([rows[j] + [c.pad_id] * (width - len(rows[j])) for j in chunk])
+                hyps = self._model.generate(src, beam=self.beam_size, banned_ids=banned)
+                for j, ids in zip(chunk, hyps):
+                    out[pairs[j]] = self._sp.decode(ids)
         return out
 
     def translate_many(self, texts: list[str], sources: list[str], target: str) -> list[str]:
-        """Translate texts[i] from sources[i] into target, all in one batched pass.
+        """Translate texts[i] from sources[i] into target in one batched pass.
 
-        A text whose source equals the target (or is "und") is returned unchanged.
+        Returned unchanged: text already in the target language, undetermined text ("und"),
+        and text in a language this model cannot translate.
         """
-        if target not in LANGUAGES:
-            raise UnsupportedLanguage(f"Unsupported language '{target}'")
+        if target not in self.languages:
+            raise UnsupportedLanguage(f"Unsupported target language '{target}'")
 
         plans: list[tuple[str, list[list[str]]] | None] = []
-        todo: dict[tuple[str, str], None] = {}  # ordered set of uncached pairs
+        todo: dict[tuple[str, str], None] = {}
         done: dict[tuple[str, str], str] = {}
         for text, src in zip(texts, sources):
-            if src == target or src not in LANGUAGES or not text.strip():
+            if src == target or src not in self.languages or not text.strip():
                 plans.append(None)
                 continue
             lines = _split(text)
@@ -261,6 +211,4 @@ class Translator:
         return out
 
     def translate(self, text: str, source: str, target: str) -> str:
-        if source not in LANGUAGES:
-            raise UnsupportedLanguage(f"Unsupported language '{source}'")
         return self.translate_many([text], [source], target)[0]

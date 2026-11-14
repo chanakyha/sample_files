@@ -1,12 +1,8 @@
-# Runtime (no PyTorch needed)
+# Runtime: our own models only (no pretrained / Hugging Face models)
 fastapi>=0.110
 uvicorn[standard]>=0.29
-ctranslate2>=4.5
-transformers>=4.56
+torch>=2.2
 sentencepiece>=0.2
-langid>=1.1.6
-lingua-language-detector>=2.0
-fasttext-predict>=0.9.2
 numpy>=1.26
 
 # Tests

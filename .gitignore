@@ -5,12 +5,19 @@ __pycache__/
 
 # Virtual environment (recreate with: python -m venv .venv)
 .venv/
+.venv-gpu/
 venv/
 
-# Large files: model weights (download_models.py) and offline wheel bundles
-models/
+# Large files: training data and checkpoints (regenerate with training/*.py), offline wheel bundles
+# (the trained models in TranslatorService/models/ ARE committed, so the API runs after cloning)
+TranslatorService/training/data/
+TranslatorService/training/checkpoints/
+TranslatorService/training/STOP
+TranslatorService/training/*.stderr.txt
 wheels/
 *.zip
+publish/
+TranslatorService/logs/
 
 # .NET build output
 bin/

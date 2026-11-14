@@ -1,0 +1,55 @@
+bg: 39,951 sentences
+cs: 40,000 sentences
+da: 40,000 sentences
+de: 40,000 sentences
+el: 40,000 sentences
+en: 120,000 sentences
+es: 120,000 sentences
+et: 39,945 sentences
+fi: 40,000 sentences
+fr: 120,000 sentences
+ga: 38,240 sentences
+hr: 39,862 sentences
+hu: 40,000 sentences
+it: 40,000 sentences
+lt: 40,000 sentences
+lv: 39,927 sentences
+mt: 35,102 sentences
+nl: 40,000 sentences
+pl: 40,000 sentences
+pt: 40,000 sentences
+ro: 40,000 sentences
+sk: 39,979 sentences
+sl: 39,846 sentences
+sv: 40,000 sentences
+dropped English-like lines: {'bg': 49, 'cs': 2, 'da': 11, 'de': 35, 'es': 15, 'et': 55, 'fi': 10, 'fr': 68, 'ga': 66, 'hr': 138, 'hu': 18, 'it': 61, 'lt': 3, 'lv': 73, 'mt': 188, 'nl': 36, 'pl': 18, 'pt': 25, 'ro': 7, 'sk': 21, 'sl': 154, 'sv': 11}
+phrases: 15,520 examples (29 phrases dropped because they are in an evaluation set)
+1,804,796 training examples, 12,000 test; loading took 307s
+features extracted in 297s
+epoch 1: loss 0.1128, held-out accuracy 98.78% (450s)
+epoch 2: loss 0.0527, held-out accuracy 98.83% (436s)
+epoch 3: loss 0.0471, held-out accuracy 98.88% (473s)
+epoch 4: loss 0.0446, held-out accuracy 98.85% (416s)
+epoch 5: loss 0.0432, held-out accuracy 98.78% (408s)
+held-out per language: {'bg': '100%', 'cs': '97%', 'da': '99%', 'de': '100%', 'el': '100%', 'en': '100%', 'es': '100%', 'et': '99%', 'fi': '100%', 'fr': '100%', 'ga': '99%', 'hr': '96%', 'hu': '100%', 'it': '99%', 'lt': '99%', 'lv': '100%', 'mt': '95%', 'nl': '99%', 'pl': '99%', 'pt': '99%', 'ro': '100%', 'sk': '96%', 'sl': '95%', 'sv': '99%'}
+prior calibration (held-out full + short fragments): boost 0.0 -> other 92.80%, main 96.43%
+   boost 0.25 -> other 92.66%, main 96.83%
+   boost 0.50 -> other 92.63%, main 97.00%
+   boost 0.75 -> other 92.58%, main 97.17%
+   boost 1.00 -> other 92.51%, main 97.40%
+   boost 1.25 -> other 92.44%, main 97.50%
+   boost 1.50 -> other 92.39%, main 97.63%
+   boost 2.00 -> other 92.14%, main 97.87%
+   boost 2.50 -> other 91.96%, main 97.90%
+   boost 3.00 -> other 91.72%, main 98.07%
+chosen prior boost: 1.5
+held-out accuracy with prior: 98.67%
+lid_challenge.tsv: 142/143 (99.3%) short 37/37, sentence 24/24, names 30/30, casual_en 22/22, casual_other 29/30
+   miss: de->nl  bis morgen
+lid_everyday.tsv: 147/150 (98.0%) lid_everyday 147/150
+   miss: en->mt  hi
+   miss: en->es  no
+   miss: fr->it  non
+lid_everyday2.tsv: 69/70 (98.6%) lid_everyday2 69/70
+   miss: en->sl  cheers
+saved D:\Chanakyha V\TCS\Stellantis\Translator\TranslatorService\models\lid\lid.pt

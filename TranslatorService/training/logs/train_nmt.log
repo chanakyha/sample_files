@@ -1,0 +1,340 @@
+[2026-11-12 18:54:13] model: 10.9M parameters, 3,965,988 training examples, 4 threads
+[2026-11-12 19:07:41] step 100 epoch 0 batch 100/19754 loss 9.201 lr 2.50e-04 670 tok/s
+[2026-11-12 19:19:36] step 200 epoch 0 batch 200/19754 loss 7.412 lr 5.00e-04 775 tok/s
+[2026-11-12 19:24:37] EVAL step 242: dev BLEU 0.01 {'en-es': 0.0, 'en-fr': 0.0, 'es-en': 0.0, 'es-fr': 0.0, 'fr-en': 0.0, 'fr-es': 0.0}  -> new best, exported
+[2026-11-12 19:24:37]      sample ->fr: ['Je ne ne ne ne ne ne ne ne ne ne ne ne ne ne ne ne ne ne ne ne ne ne ne ne ne', "Je''estestestestestestestestests.", 'Je ne ne ne ne ne ne ne ne ne ne ne ne ne ne ne ne ne ne ne ne ne ne ne ne ne']
+[2026-11-12 19:30:54] step 300 epoch 0 batch 300/19754 loss 6.812 lr 7.50e-04 767 tok/s
+[2026-11-12 19:42:27] step 400 epoch 0 batch 400/19754 loss 6.438 lr 1.00e-03 773 tok/s
+[2026-11-12 19:53:10] step 500 epoch 0 batch 500/19754 loss 6.155 lr 8.94e-04 851 tok/s
+[2026-11-12 19:54:54] EVAL step 513: dev BLEU 0.15 {'en-es': 0.1, 'en-fr': 0.3, 'es-en': 0.1, 'es-fr': 0.5, 'fr-en': 0.1, 'fr-es': 0.1}  -> new best, exported
+[2026-11-12 19:54:54]      sample ->fr: ['Je suis que je suis pas pas pas à la Commission.', "Je ne ne pas pas de l'Union européenne.", 'Je pense que nous nous avons avons pas.']
+[2026-11-12 20:04:53] step 600 epoch 0 batch 600/19754 loss 5.952 lr 8.16e-04 758 tok/s
+[2026-11-12 20:16:26] step 700 epoch 0 batch 700/19754 loss 5.818 lr 7.56e-04 794 tok/s
+[2026-11-12 20:24:42] step 800 epoch 0 batch 800/19754 loss 5.735 lr 7.07e-04 1104 tok/s
+[2026-11-12 20:25:08] EVAL step 803: dev BLEU 0.40 {'en-es': 0.3, 'en-fr': 0.2, 'es-en': 0.3, 'es-fr': 0.7, 'fr-en': 0.6, 'fr-es': 0.4}  -> new best, exported
+[2026-11-12 20:25:08]      sample ->fr: ['Je veux faire.', "Je suis d'un problème.", 'Il est-vous-vous.']
+[2026-11-12 20:32:59] step 900 epoch 0 batch 900/19754 loss 5.660 lr 6.67e-04 1067 tok/s
+[2026-11-12 20:41:09] step 1000 epoch 0 batch 1000/19754 loss 5.566 lr 6.32e-04 1120 tok/s
+[2026-11-12 20:49:21] step 1100 epoch 0 batch 1100/19754 loss 5.508 lr 6.03e-04 1115 tok/s
+[2026-11-12 20:55:20] EVAL step 1171: dev BLEU 0.47 {'en-es': 0.4, 'en-fr': 0.7, 'es-en': 0.3, 'es-fr': 1.0, 'fr-en': 0.5, 'fr-es': 0.4}  -> new best, exported
+[2026-11-12 20:55:20]      sample ->fr: ['La crise a été été un héhéuuuuuu.', 'Il a été été été un che.', 'Il est un é.']
+[2026-11-12 20:57:45] step 1200 epoch 0 batch 1200/19754 loss 5.504 lr 5.77e-04 1081 tok/s
+[2026-11-12 21:05:52] step 1300 epoch 0 batch 1300/19754 loss 5.381 lr 5.55e-04 1136 tok/s
+[2026-11-12 21:14:07] step 1400 epoch 0 batch 1400/19754 loss 5.442 lr 5.35e-04 1113 tok/s
+[2026-11-12 21:22:18] step 1500 epoch 0 batch 1500/19754 loss 5.372 lr 5.16e-04 1104 tok/s
+[2026-11-12 21:25:31] EVAL step 1538: dev BLEU 0.79 {'en-es': 0.7, 'en-fr': 0.5, 'es-en': 1.3, 'es-fr': 0.9, 'fr-en': 1.1, 'fr-es': 1.0}  -> new best, exported
+[2026-11-12 21:25:31]      sample ->fr: ['Le monde est le plus de la maison.', 'Elle a été un é.', 'Comment est-ilil ?']
+[2026-11-12 21:30:34] step 1600 epoch 0 batch 1600/19754 loss 5.305 lr 5.00e-04 1077 tok/s
+[2026-11-12 21:38:42] step 1700 epoch 0 batch 1700/19754 loss 5.278 lr 4.85e-04 1122 tok/s
+[2026-11-12 21:46:50] step 1800 epoch 0 batch 1800/19754 loss 5.251 lr 4.71e-04 1110 tok/s
+[2026-11-12 21:54:56] step 1900 epoch 0 batch 1900/19754 loss 5.215 lr 4.59e-04 1129 tok/s
+[2026-11-12 21:55:45] EVAL step 1908: dev BLEU 1.39 {'en-es': 0.9, 'en-fr': 1.0, 'es-en': 1.0, 'es-fr': 1.7, 'fr-en': 1.3, 'fr-es': 2.2}  -> new best, exported
+[2026-11-12 21:55:45]      sample ->fr: ["L'acheche est un peu de la vie.", 'Mon père a été été un che.', "¿Qué l'on est une fois?"]
+[2026-11-12 22:03:12] step 2000 epoch 0 batch 2000/19754 loss 5.129 lr 4.47e-04 1111 tok/s
+[2026-11-12 22:11:20] step 2100 epoch 0 batch 2100/19754 loss 5.142 lr 4.36e-04 1101 tok/s
+[2026-11-12 22:19:27] step 2200 epoch 0 batch 2200/19754 loss 5.066 lr 4.26e-04 1124 tok/s
+[2026-11-12 22:26:01] EVAL step 2277: dev BLEU 1.07 {'en-es': 1.0, 'en-fr': 1.2, 'es-en': 0.8, 'es-fr': 1.3, 'fr-en': 0.9, 'fr-es': 1.3}
+[2026-11-12 22:26:01]      sample ->fr: ['La plupart des a été un peu de la vie.', "C'est mon mono.", "Pourquoi l'air la porte ?"]
+[2026-11-12 22:27:56] step 2300 epoch 0 batch 2300/19754 loss 5.025 lr 4.17e-04 1086 tok/s
+[2026-11-12 22:36:04] step 2400 epoch 0 batch 2400/19754 loss 5.008 lr 4.08e-04 1122 tok/s
+[2026-11-12 22:44:07] step 2500 epoch 0 batch 2500/19754 loss 5.007 lr 4.00e-04 1123 tok/s
+[2026-11-12 22:52:18] step 2600 epoch 0 batch 2600/19754 loss 4.977 lr 3.92e-04 1110 tok/s
+[2026-11-12 22:56:18] EVAL step 2647: dev BLEU 1.88 {'en-es': 1.5, 'en-fr': 1.4, 'es-en': 1.3, 'es-fr': 2.3, 'fr-en': 2.4, 'fr-es': 2.2}  -> new best, exported
+[2026-11-12 22:56:18]      sample ->fr: ['Le manque de la vie.', 'Mon groupe est le nom de mon groupe.', 'Comment la plupart des livres-t-elle ?']
+[2026-11-12 23:00:37] step 2700 epoch 0 batch 2700/19754 loss 4.979 lr 3.85e-04 1054 tok/s
+[2026-11-12 23:08:40] step 2800 epoch 0 batch 2800/19754 loss 4.913 lr 3.78e-04 1087 tok/s
+[2026-11-12 23:16:48] step 2900 epoch 0 batch 2900/19754 loss 4.878 lr 3.71e-04 1113 tok/s
+[2026-11-12 23:25:02] step 3000 epoch 0 batch 3000/19754 loss 4.845 lr 3.65e-04 1101 tok/s
+[2026-11-12 23:26:30] EVAL step 3016: dev BLEU 3.46 {'en-es': 3.5, 'en-fr': 3.4, 'es-en': 2.2, 'es-fr': 3.6, 'fr-en': 2.5, 'fr-es': 4.7}  -> new best, exported
+[2026-11-12 23:26:30]      sample ->fr: ['Le problème doit être une nouvelle fois.', "C'est mon groupe est ma mat.", 'Comment est la seule de la maison ?']
+[2026-11-12 23:33:15] step 3100 epoch 0 batch 3100/19754 loss 4.795 lr 3.59e-04 1110 tok/s
+[2026-11-12 23:41:27] step 3200 epoch 0 batch 3200/19754 loss 4.802 lr 3.54e-04 1109 tok/s
+[2026-11-12 23:49:36] step 3300 epoch 0 batch 3300/19754 loss 4.746 lr 3.48e-04 1113 tok/s
+[2026-11-12 23:56:42] EVAL step 3385: dev BLEU 4.35 {'en-es': 3.9, 'en-fr': 4.0, 'es-en': 3.7, 'es-fr': 4.9, 'fr-en': 4.0, 'fr-es': 5.3}  -> new best, exported
+[2026-11-12 23:56:42]      sample ->fr: ["L'une des stratégies de la l'eau.", 'Mon groupe est ma ma maternante.', "Where'est la posineine est la main d'unisis-ce de la vie ?"]
+[2026-11-12 23:57:58] step 3400 epoch 0 batch 3400/19754 loss 4.687 lr 3.43e-04 1092 tok/s
+[2026-11-13 00:06:10] step 3500 epoch 0 batch 3500/19754 loss 4.689 lr 3.38e-04 1118 tok/s
+[2026-11-13 00:16:01] step 3600 epoch 0 batch 3600/19754 loss 4.711 lr 3.33e-04 896 tok/s
+[2026-11-13 00:27:02] EVAL step 3691: dev BLEU 5.90 {'en-es': 6.3, 'en-fr': 5.0, 'es-en': 5.9, 'es-fr': 6.1, 'fr-en': 5.4, 'fr-es': 6.5}  -> new best, exported
+[2026-11-13 00:27:02]      sample ->fr: ['La situation doit être un nouveau démail.', 'mon nom est la mort.', "Où est la la c'est la c'est-à-dire ?"]
+[2026-11-13 00:28:10] step 3700 epoch 0 batch 3700/19754 loss 4.654 lr 3.29e-04 743 tok/s
+[2026-11-13 00:40:08] EVAL step 3785: dev BLEU 6.20 {'en-es': 6.5, 'en-fr': 4.0, 'es-en': 6.0, 'es-fr': 5.2, 'fr-en': 7.0, 'fr-es': 7.7}  -> new best, exported
+[2026-11-13 00:40:08]      sample ->fr: ['La voiture est une nouvelle eau.', 'Je suis mon nom de massse.', 'Combien de temps est la amoureux ?']
+[2026-11-13 00:40:08] stopped at step 3785; best dev BLEU 6.20; model in D:\Chanakyha V\TCS\Stellantis\Translator\TranslatorService\models\nmt-en-es-fr
+[2026-11-13 00:40:56] model: 10.9M parameters, 3,965,988 training examples, device NVIDIA GeForce MX130, 3000x1 tokens per step, mix {'Tatoeba': 3.0, 'NewsCommentary': 1.0, 'Europarl': 0.3}
+[2026-11-13 00:41:55] model: 10.9M parameters, 3,965,988 training examples, device NVIDIA GeForce MX130, 6000x1 tokens per step, mix {'Tatoeba': 3.0, 'NewsCommentary': 1.0, 'Europarl': 0.3}
+[2026-11-13 00:44:18] resumed at step 3785 (epoch 1, best dev BLEU 6.20)
+[2026-11-13 00:44:18] model: 10.9M parameters, 3,965,988 training examples, device NVIDIA GeForce MX130, 3000x2 tokens per step, mix {'Tatoeba': 3.0, 'NewsCommentary': 1.0, 'Europarl': 0.3}
+[2026-11-13 00:45:13] step 3800 epoch 1 batch 29/35348 loss 4.472 lr 3.24e-04 1451 tok/s
+[2026-11-13 00:48:46] step 3900 epoch 1 batch 229/35348 loss 4.517 lr 3.20e-04 2484 tok/s
+[2026-11-13 00:52:24] step 4000 epoch 1 batch 429/35348 loss 4.428 lr 3.16e-04 2477 tok/s
+[2026-11-13 00:56:12] step 4100 epoch 1 batch 629/35348 loss 4.430 lr 3.12e-04 2361 tok/s
+[2026-11-13 00:59:46] step 4200 epoch 1 batch 829/35348 loss 4.359 lr 3.09e-04 2480 tok/s
+[2026-11-13 01:03:19] step 4300 epoch 1 batch 1029/35348 loss 4.285 lr 3.05e-04 2493 tok/s
+[2026-11-13 01:07:01] step 4400 epoch 1 batch 1229/35348 loss 4.284 lr 3.02e-04 2443 tok/s
+[2026-11-13 01:10:39] step 4500 epoch 1 batch 1429/35348 loss 4.299 lr 2.98e-04 2457 tok/s
+[2026-11-13 01:14:43] EVAL step 4599: dev BLEU 9.01 {'en-es': 8.8, 'en-fr': 8.3, 'es-en': 11.0, 'es-fr': 8.7, 'fr-en': 8.2, 'fr-es': 9.1}  -> new best, exported
+[2026-11-13 01:14:43]      sample ->fr: ['Le voiture doit une nouvelle œufe.', 'Mon nom est née.', 'Où est la train de train ?']
+[2026-11-13 01:14:45] step 4600 epoch 1 batch 1629/35348 loss 4.139 lr 2.95e-04 2189 tok/s
+[2026-11-13 01:18:15] step 4700 epoch 1 batch 1829/35348 loss 4.159 lr 2.92e-04 2522 tok/s
+[2026-11-13 01:21:59] step 4800 epoch 1 batch 2029/35348 loss 4.153 lr 2.89e-04 2416 tok/s
+[2026-11-13 01:25:35] step 4900 epoch 1 batch 2229/35348 loss 4.119 lr 2.86e-04 2467 tok/s
+[2026-11-13 01:29:25] step 5000 epoch 1 batch 2429/35348 loss 4.106 lr 2.83e-04 2351 tok/s
+[2026-11-13 01:33:07] step 5100 epoch 1 batch 2629/35348 loss 4.096 lr 2.80e-04 2429 tok/s
+[2026-11-13 01:36:42] step 5200 epoch 1 batch 2829/35348 loss 4.150 lr 2.77e-04 2480 tok/s
+[2026-11-13 01:40:14] step 5300 epoch 1 batch 3029/35348 loss 4.069 lr 2.75e-04 2479 tok/s
+[2026-11-13 01:43:45] step 5400 epoch 1 batch 3229/35348 loss 4.073 lr 2.72e-04 2523 tok/s
+[2026-11-13 01:45:01] EVAL step 5425: dev BLEU 11.09 {'en-es': 10.5, 'en-fr': 9.7, 'es-en': 12.6, 'es-fr': 9.6, 'fr-en': 11.6, 'fr-es': 12.7}  -> new best, exported
+[2026-11-13 01:45:01]      sample ->fr: ["Le fait qu'il a besoin d'une nouvelle ratt.", "J'ai l' nom de monteau.", 'Où est la gare de train de train ?']
+[2026-11-13 01:47:47] step 5500 epoch 1 batch 3429/35348 loss 4.005 lr 2.70e-04 2233 tok/s
+[2026-11-13 01:51:28] step 5600 epoch 1 batch 3629/35348 loss 4.028 lr 2.67e-04 2440 tok/s
+[2026-11-13 01:54:55] step 5700 epoch 1 batch 3829/35348 loss 4.000 lr 2.65e-04 2557 tok/s
+[2026-11-13 01:58:28] step 5800 epoch 1 batch 4029/35348 loss 3.999 lr 2.63e-04 2509 tok/s
+[2026-11-13 02:02:06] step 5900 epoch 1 batch 4229/35348 loss 4.032 lr 2.60e-04 2425 tok/s
+[2026-11-13 02:05:38] step 6000 epoch 1 batch 4429/35348 loss 3.994 lr 2.58e-04 2537 tok/s
+[2026-11-13 02:09:10] step 6100 epoch 1 batch 4629/35348 loss 3.929 lr 2.56e-04 2503 tok/s
+[2026-11-13 02:12:55] step 6200 epoch 1 batch 4829/35348 loss 3.964 lr 2.54e-04 2404 tok/s
+[2026-11-13 02:15:15] EVAL step 6259: dev BLEU 13.67 {'en-es': 11.7, 'en-fr': 13.4, 'es-en': 15.2, 'es-fr': 11.8, 'fr-en': 13.8, 'fr-es': 15.3}  -> new best, exported
+[2026-11-13 02:15:15]      sample ->fr: ['Le voiture doit une nouvelle batter.', 'Je suis mort de mes noms.', 'Où est la gare de train de train ?']
+[2026-11-13 02:16:34] step 6300 epoch 1 batch 5029/35348 loss 3.982 lr 2.52e-04 2405 tok/s
+[2026-11-13 02:20:05] step 6400 epoch 1 batch 5229/35348 loss 3.894 lr 2.50e-04 2509 tok/s
+[2026-11-13 02:23:45] step 6500 epoch 1 batch 5429/35348 loss 3.915 lr 2.48e-04 2459 tok/s
+[2026-11-13 02:27:13] step 6600 epoch 1 batch 5629/35348 loss 3.951 lr 2.46e-04 2565 tok/s
+[2026-11-13 02:30:45] step 6700 epoch 1 batch 5829/35348 loss 3.807 lr 2.44e-04 2493 tok/s
+[2026-11-13 02:34:16] step 6800 epoch 1 batch 6029/35348 loss 3.926 lr 2.43e-04 2516 tok/s
+[2026-11-13 02:37:46] step 6900 epoch 1 batch 6229/35348 loss 3.806 lr 2.41e-04 2536 tok/s
+[2026-11-13 02:41:10] step 7000 epoch 1 batch 6429/35348 loss 3.835 lr 2.39e-04 2581 tok/s
+[2026-11-13 02:44:41] step 7100 epoch 1 batch 6629/35348 loss 3.801 lr 2.37e-04 2540 tok/s
+[2026-11-13 02:45:28] EVAL step 7116: dev BLEU 15.52 {'en-es': 14.7, 'en-fr': 13.7, 'es-en': 18.9, 'es-fr': 13.9, 'fr-en': 15.6, 'fr-es': 16.5}  -> new best, exported
+[2026-11-13 02:45:28]      sample ->fr: ["L'eau a besoin d'un nouveau batter.", 'Mes noms est chanakakak.', 'Où est la gare de train ?']
+[2026-11-13 02:48:20] step 7200 epoch 1 batch 6829/35348 loss 3.777 lr 2.36e-04 2422 tok/s
+[2026-11-13 02:51:58] step 7300 epoch 1 batch 7029/35348 loss 3.812 lr 2.34e-04 2470 tok/s
+[2026-11-13 02:55:34] step 7400 epoch 1 batch 7229/35348 loss 3.749 lr 2.32e-04 2485 tok/s
+[2026-11-13 02:59:20] step 7500 epoch 1 batch 7429/35348 loss 3.835 lr 2.31e-04 2373 tok/s
+[2026-11-13 03:03:08] step 7600 epoch 1 batch 7629/35348 loss 3.819 lr 2.29e-04 2391 tok/s
+[2026-11-13 03:07:00] step 7700 epoch 1 batch 7829/35348 loss 3.830 lr 2.28e-04 2282 tok/s
+[2026-11-13 03:10:56] step 7800 epoch 1 batch 8029/35348 loss 3.749 lr 2.26e-04 2247 tok/s
+[2026-11-13 03:15:06] step 7900 epoch 1 batch 8229/35348 loss 3.765 lr 2.25e-04 2168 tok/s
+[2026-11-13 03:15:49] EVAL step 7911: dev BLEU 16.17 {'en-es': 13.8, 'en-fr': 15.2, 'es-en': 19.9, 'es-fr': 15.2, 'fr-en': 15.9, 'fr-es': 16.4}  -> new best, exported
+[2026-11-13 03:15:49]      sample ->fr: ['La voiture doit une nouvelle batterie.', 'Ma nom est en train de chanard.', 'Où est la gare de train ?']
+[2026-11-13 03:19:19] step 8000 epoch 1 batch 8429/35348 loss 3.762 lr 2.24e-04 2103 tok/s
+[2026-11-13 03:22:50] step 8100 epoch 1 batch 8629/35348 loss 3.773 lr 2.22e-04 2499 tok/s
+[2026-11-13 03:26:34] step 8200 epoch 1 batch 8829/35348 loss 3.754 lr 2.21e-04 2411 tok/s
+[2026-11-13 03:30:11] step 8300 epoch 1 batch 9029/35348 loss 3.652 lr 2.20e-04 2442 tok/s
+[2026-11-13 03:33:52] step 8400 epoch 1 batch 9229/35348 loss 3.698 lr 2.18e-04 2412 tok/s
+[2026-11-13 03:37:34] step 8500 epoch 1 batch 9429/35348 loss 3.743 lr 2.17e-04 2434 tok/s
+[2026-11-13 03:41:10] step 8600 epoch 1 batch 9629/35348 loss 3.757 lr 2.16e-04 2428 tok/s
+[2026-11-13 03:44:49] step 8700 epoch 1 batch 9829/35348 loss 3.695 lr 2.14e-04 2461 tok/s
+[2026-11-13 03:46:04] EVAL step 8727: dev BLEU 17.30 {'en-es': 14.9, 'en-fr': 15.7, 'es-en': 23.1, 'es-fr': 14.1, 'fr-en': 18.0, 'fr-es': 18.2}  -> new best, exported
+[2026-11-13 03:46:04]      sample ->fr: ["La voiture a besoin d'une nouvelle battery.", 'Cettez mon nom est channuy.', 'Où est la gare de train ?']
+[2026-11-13 03:48:53] step 8800 epoch 1 batch 10029/35348 loss 3.716 lr 2.13e-04 2208 tok/s
+[2026-11-13 03:52:33] step 8900 epoch 1 batch 10229/35348 loss 3.616 lr 2.12e-04 2426 tok/s
+[2026-11-13 03:56:05] step 9000 epoch 1 batch 10429/35348 loss 3.637 lr 2.11e-04 2512 tok/s
+[2026-11-13 03:59:47] step 9100 epoch 1 batch 10629/35348 loss 3.617 lr 2.10e-04 2425 tok/s
+[2026-11-13 04:03:37] step 9200 epoch 1 batch 10829/35348 loss 3.685 lr 2.09e-04 2357 tok/s
+[2026-11-13 04:07:09] step 9300 epoch 1 batch 11029/35348 loss 3.683 lr 2.07e-04 2504 tok/s
+[2026-11-13 04:10:50] step 9400 epoch 1 batch 11229/35348 loss 3.667 lr 2.06e-04 2442 tok/s
+[2026-11-13 04:14:29] step 9500 epoch 1 batch 11429/35348 loss 3.654 lr 2.05e-04 2437 tok/s
+[2026-11-13 04:16:22] EVAL step 9545: dev BLEU 18.74 {'en-es': 16.9, 'en-fr': 16.4, 'es-en': 24.5, 'es-fr': 16.4, 'fr-en': 18.3, 'fr-es': 19.4}  -> new best, exported
+[2026-11-13 04:16:22]      sample ->fr: ["Le car a besoin d'un nouveau chanter.", "C'est ma nom de la channette.", 'Où est la gare de train ?']
+[2026-11-13 04:18:16] step 9600 epoch 1 batch 11629/35348 loss 3.614 lr 2.04e-04 2307 tok/s
+[2026-11-13 04:21:42] step 9700 epoch 1 batch 11829/35348 loss 3.644 lr 2.03e-04 2538 tok/s
+[2026-11-13 04:25:11] step 9800 epoch 1 batch 12029/35348 loss 3.688 lr 2.02e-04 2493 tok/s
+[2026-11-13 04:28:34] step 9900 epoch 1 batch 12229/35348 loss 3.662 lr 2.01e-04 2547 tok/s
+[2026-11-13 04:32:17] step 10000 epoch 1 batch 12429/35348 loss 3.578 lr 2.00e-04 2410 tok/s
+[2026-11-13 04:36:09] step 10100 epoch 1 batch 12629/35348 loss 3.545 lr 1.99e-04 2340 tok/s
+[2026-11-13 04:39:44] step 10200 epoch 1 batch 12829/35348 loss 3.628 lr 1.98e-04 2494 tok/s
+[2026-11-13 04:43:18] step 10300 epoch 1 batch 13029/35348 loss 3.580 lr 1.97e-04 2510 tok/s
+[2026-11-13 04:46:35] EVAL step 10385: dev BLEU 19.05 {'en-es': 17.8, 'en-fr': 17.0, 'es-en': 24.9, 'es-fr': 16.5, 'fr-en': 19.4, 'fr-es': 19.2}  -> new best, exported
+[2026-11-13 04:46:35]      sample ->fr: ["La voiture a besoin d'un nouveau batter.", 'Je me nome est chanak.', 'Où est la gare ?']
+[2026-11-13 04:47:08] step 10400 epoch 1 batch 13229/35348 loss 3.540 lr 1.96e-04 2292 tok/s
+[2026-11-13 04:50:48] step 10500 epoch 1 batch 13429/35348 loss 3.627 lr 1.95e-04 2449 tok/s
+[2026-11-13 04:54:44] step 10600 epoch 1 batch 13629/35348 loss 3.566 lr 1.94e-04 2317 tok/s
+[2026-11-13 04:58:28] step 10700 epoch 1 batch 13829/35348 loss 3.554 lr 1.93e-04 2371 tok/s
+[2026-11-13 05:02:05] step 10800 epoch 1 batch 14029/35348 loss 3.612 lr 1.92e-04 2459 tok/s
+[2026-11-13 05:05:41] step 10900 epoch 1 batch 14229/35348 loss 3.513 lr 1.92e-04 2439 tok/s
+[2026-11-13 05:09:17] step 11000 epoch 1 batch 14429/35348 loss 3.538 lr 1.91e-04 2442 tok/s
+[2026-11-13 05:13:08] step 11100 epoch 1 batch 14629/35348 loss 3.593 lr 1.90e-04 2355 tok/s
+[2026-11-13 05:16:50] EVAL step 11192: dev BLEU 19.50 {'en-es': 17.4, 'en-fr': 16.6, 'es-en': 26.1, 'es-fr': 17.5, 'fr-en': 20.0, 'fr-es': 18.6}  -> new best, exported
+[2026-11-13 05:16:50]      sample ->fr: ['La voiture a besoin de nouveau batter.', "Je suis effrayé que c'est channch.", 'Où est la gare ?']
+[2026-11-13 05:17:06] step 11200 epoch 1 batch 14829/35348 loss 3.559 lr 1.89e-04 2253 tok/s
+[2026-11-13 05:20:37] step 11300 epoch 1 batch 15029/35348 loss 3.539 lr 1.88e-04 2549 tok/s
+[2026-11-13 05:24:11] step 11400 epoch 1 batch 15229/35348 loss 3.619 lr 1.87e-04 2448 tok/s
+[2026-11-13 05:28:01] step 11500 epoch 1 batch 15429/35348 loss 3.517 lr 1.87e-04 2341 tok/s
+[2026-11-13 05:31:34] step 11600 epoch 1 batch 15629/35348 loss 3.545 lr 1.86e-04 2491 tok/s
+[2026-11-13 05:35:14] step 11700 epoch 1 batch 15829/35348 loss 3.551 lr 1.85e-04 2425 tok/s
+[2026-11-13 05:38:53] step 11800 epoch 1 batch 16029/35348 loss 3.481 lr 1.84e-04 2407 tok/s
+[2026-11-13 05:42:35] step 11900 epoch 1 batch 16229/35348 loss 3.554 lr 1.83e-04 2410 tok/s
+[2026-11-13 05:46:19] step 12000 epoch 1 batch 16429/35348 loss 3.604 lr 1.83e-04 2389 tok/s
+[2026-11-13 05:47:06] EVAL step 12014: dev BLEU 20.94 {'en-es': 18.5, 'en-fr': 19.7, 'es-en': 27.6, 'es-fr': 18.6, 'fr-en': 21.6, 'fr-es': 19.8}  -> new best, exported
+[2026-11-13 05:47:06]      sample ->fr: ['La voiture a besoin de nouveau battus.', 'Cette killahaky.', 'Où est la gare de train ?']
+[2026-11-13 05:50:16] step 12100 epoch 1 batch 16629/35348 loss 3.514 lr 1.82e-04 2260 tok/s
+[2026-11-13 05:54:03] step 12200 epoch 1 batch 16829/35348 loss 3.510 lr 1.81e-04 2372 tok/s
+[2026-11-13 05:57:39] step 12300 epoch 1 batch 17029/35348 loss 3.503 lr 1.80e-04 2433 tok/s
+[2026-11-13 06:01:24] step 12400 epoch 1 batch 17229/35348 loss 3.629 lr 1.80e-04 2384 tok/s
+[2026-11-13 06:05:04] step 12500 epoch 1 batch 17429/35348 loss 3.548 lr 1.79e-04 2402 tok/s
+[2026-11-13 06:08:48] step 12600 epoch 1 batch 17629/35348 loss 3.486 lr 1.78e-04 2380 tok/s
+[2026-11-13 06:12:18] step 12700 epoch 1 batch 17829/35348 loss 3.552 lr 1.77e-04 2494 tok/s
+[2026-11-13 06:16:07] step 12800 epoch 1 batch 18029/35348 loss 3.487 lr 1.77e-04 2360 tok/s
+[2026-11-13 06:17:20] EVAL step 12827: dev BLEU 21.41 {'en-es': 17.8, 'en-fr': 19.5, 'es-en': 29.3, 'es-fr': 18.7, 'fr-en': 21.9, 'fr-es': 21.1}  -> new best, exported
+[2026-11-13 06:17:20]      sample ->fr: ['La voiture doit avoir une nouvelle batter.', 'Cette nom est chanaky.', 'Où est la gare ?']
+[2026-11-13 06:19:54] step 12900 epoch 1 batch 18229/35348 loss 3.491 lr 1.76e-04 2353 tok/s
+[2026-11-13 06:23:39] step 13000 epoch 1 batch 18429/35348 loss 3.447 lr 1.75e-04 2386 tok/s
+[2026-11-13 06:27:23] step 13100 epoch 1 batch 18629/35348 loss 3.486 lr 1.75e-04 2378 tok/s
+[2026-11-13 06:31:07] step 13200 epoch 1 batch 18829/35348 loss 3.472 lr 1.74e-04 2393 tok/s
+[2026-11-13 06:34:55] step 13300 epoch 1 batch 19029/35348 loss 3.414 lr 1.73e-04 2358 tok/s
+[2026-11-13 06:38:40] step 13400 epoch 1 batch 19229/35348 loss 3.492 lr 1.73e-04 2395 tok/s
+[2026-11-13 06:42:21] step 13500 epoch 1 batch 19429/35348 loss 3.475 lr 1.72e-04 2424 tok/s
+[2026-11-13 06:45:58] step 13600 epoch 1 batch 19629/35348 loss 3.517 lr 1.71e-04 2422 tok/s
+[2026-11-13 06:47:34] EVAL step 13642: dev BLEU 21.10 {'en-es': 20.0, 'en-fr': 17.9, 'es-en': 27.1, 'es-fr': 17.3, 'fr-en': 22.7, 'fr-es': 21.5}
+[2026-11-13 06:47:34]      sample ->fr: ["La voiture a besoin d'une nouvelle battere.", 'Mon nom est la chanue.', 'Où est la gare de train ?']
+[2026-11-13 06:49:42] step 13700 epoch 1 batch 19829/35348 loss 3.539 lr 1.71e-04 2354 tok/s
+[2026-11-13 06:53:17] step 13800 epoch 1 batch 20029/35348 loss 3.411 lr 1.70e-04 2476 tok/s
+[2026-11-13 06:56:57] step 13900 epoch 1 batch 20229/35348 loss 3.459 lr 1.70e-04 2439 tok/s
+[2026-11-13 07:00:38] step 14000 epoch 1 batch 20429/35348 loss 3.428 lr 1.69e-04 2417 tok/s
+[2026-11-13 07:04:06] step 14100 epoch 1 batch 20629/35348 loss 3.432 lr 1.68e-04 2554 tok/s
+[2026-11-13 07:07:47] step 14200 epoch 1 batch 20829/35348 loss 3.488 lr 1.68e-04 2425 tok/s
+[2026-11-13 07:11:19] step 14300 epoch 1 batch 21029/35348 loss 3.502 lr 1.67e-04 2501 tok/s
+[2026-11-13 07:14:58] step 14400 epoch 1 batch 21229/35348 loss 3.425 lr 1.67e-04 2432 tok/s
+[2026-11-13 07:17:52] EVAL step 14472: dev BLEU 22.41 {'en-es': 20.1, 'en-fr': 20.6, 'es-en': 28.0, 'es-fr': 20.1, 'fr-en': 23.6, 'fr-es': 22.2}  -> new best, exported
+[2026-11-13 07:17:52]      sample ->fr: ["La voiture a besoin d'une nouvelle batte.", "C'est mon nom sinaky.", 'Où est la gare de train ?']
+[2026-11-13 07:18:54] step 14500 epoch 1 batch 21429/35348 loss 3.442 lr 1.66e-04 2275 tok/s
+[2026-11-13 07:22:38] step 14600 epoch 1 batch 21629/35348 loss 3.428 lr 1.66e-04 2414 tok/s
+[2026-11-13 07:26:23] step 14700 epoch 1 batch 21829/35348 loss 3.496 lr 1.65e-04 2381 tok/s
+[2026-11-13 07:30:12] step 14800 epoch 1 batch 22029/35348 loss 3.567 lr 1.64e-04 2379 tok/s
+[2026-11-13 07:33:49] step 14900 epoch 1 batch 22229/35348 loss 3.499 lr 1.64e-04 2457 tok/s
+[2026-11-13 07:37:37] step 15000 epoch 1 batch 22429/35348 loss 3.345 lr 1.63e-04 2382 tok/s
+[2026-11-13 07:41:06] step 15100 epoch 1 batch 22629/35348 loss 3.487 lr 1.63e-04 2532 tok/s
+[2026-11-13 07:44:59] step 15200 epoch 1 batch 22829/35348 loss 3.465 lr 1.62e-04 2339 tok/s
+[2026-11-13 07:48:06] EVAL step 15279: dev BLEU 22.58 {'en-es': 20.1, 'en-fr': 21.2, 'es-en': 28.3, 'es-fr': 20.7, 'fr-en': 22.5, 'fr-es': 22.1}  -> new best, exported
+[2026-11-13 07:48:06]      sample ->fr: ["La voiture a besoin d'une nouvelle battery.", 'Mon nom est channaky.', 'Où est la gare de train ?']
+[2026-11-13 07:48:52] step 15300 epoch 1 batch 23029/35348 loss 3.411 lr 1.62e-04 2302 tok/s
+[2026-11-13 07:52:29] step 15400 epoch 1 batch 23229/35348 loss 3.445 lr 1.61e-04 2440 tok/s
+[2026-11-13 07:56:10] step 15500 epoch 1 batch 23429/35348 loss 3.482 lr 1.61e-04 2417 tok/s
+[2026-11-13 07:59:47] step 15600 epoch 1 batch 23629/35348 loss 3.409 lr 1.60e-04 2461 tok/s
+[2026-11-13 08:03:38] step 15700 epoch 1 batch 23829/35348 loss 3.353 lr 1.60e-04 2343 tok/s
+[2026-11-13 08:07:17] step 15800 epoch 1 batch 24029/35348 loss 3.377 lr 1.59e-04 2422 tok/s
+[2026-11-13 08:11:01] step 15900 epoch 1 batch 24229/35348 loss 3.399 lr 1.59e-04 2394 tok/s
+[2026-11-13 08:14:44] step 16000 epoch 1 batch 24429/35348 loss 3.425 lr 1.58e-04 2426 tok/s
+[2026-11-13 08:18:24] EVAL step 16088: dev BLEU 22.63 {'en-es': 21.3, 'en-fr': 20.9, 'es-en': 28.7, 'es-fr': 20.6, 'fr-en': 23.5, 'fr-es': 21.0}  -> new best, exported
+[2026-11-13 08:18:24]      sample ->fr: ["L'eau a besoin d'une nouvelle batterie.", "C'est mon nom channaky.", 'Où est la traine de train ?']
+[2026-11-13 08:18:52] step 16100 epoch 1 batch 24629/35348 loss 3.470 lr 1.58e-04 2180 tok/s
+[2026-11-13 08:22:36] step 16200 epoch 1 batch 24829/35348 loss 3.353 lr 1.57e-04 2398 tok/s
+[2026-11-13 08:26:07] step 16300 epoch 1 batch 25029/35348 loss 3.351 lr 1.57e-04 2503 tok/s
+[2026-11-13 08:29:46] step 16400 epoch 1 batch 25229/35348 loss 3.313 lr 1.56e-04 2422 tok/s
+[2026-11-13 08:33:21] step 16500 epoch 1 batch 25429/35348 loss 3.431 lr 1.56e-04 2484 tok/s
+[2026-11-13 08:36:54] step 16600 epoch 1 batch 25629/35348 loss 3.423 lr 1.55e-04 2484 tok/s
+[2026-11-13 08:40:43] step 16700 epoch 1 batch 25829/35348 loss 3.409 lr 1.55e-04 2351 tok/s
+[2026-11-13 08:44:28] step 16800 epoch 1 batch 26029/35348 loss 3.398 lr 1.54e-04 2373 tok/s
+[2026-11-13 08:48:09] step 16900 epoch 1 batch 26229/35348 loss 3.350 lr 1.54e-04 2403 tok/s
+[2026-11-13 08:48:39] EVAL step 16908: dev BLEU 23.74 {'en-es': 20.4, 'en-fr': 21.1, 'es-en': 29.7, 'es-fr': 22.1, 'fr-en': 24.6, 'fr-es': 23.3}  -> new best, exported
+[2026-11-13 08:48:39]      sample ->fr: ["La voiture a besoin d'une nouvelle batteryeuse.", 'Faites mon nom est chanaky.', 'Où est la station de train ?']
+[2026-11-13 08:52:00] step 17000 epoch 1 batch 26429/35348 loss 3.389 lr 1.53e-04 2319 tok/s
+[2026-11-13 08:55:46] step 17100 epoch 1 batch 26629/35348 loss 3.470 lr 1.53e-04 2376 tok/s
+[2026-11-13 08:59:19] step 17200 epoch 1 batch 26829/35348 loss 3.430 lr 1.52e-04 2478 tok/s
+[2026-11-13 09:03:08] step 17300 epoch 1 batch 27029/35348 loss 3.353 lr 1.52e-04 2364 tok/s
+[2026-11-13 09:06:54] step 17400 epoch 1 batch 27229/35348 loss 3.349 lr 1.52e-04 2370 tok/s
+[2026-11-13 09:10:45] step 17500 epoch 1 batch 27429/35348 loss 3.357 lr 1.51e-04 2347 tok/s
+[2026-11-13 09:14:22] step 17600 epoch 1 batch 27629/35348 loss 3.368 lr 1.51e-04 2445 tok/s
+[2026-11-13 09:18:07] step 17700 epoch 1 batch 27829/35348 loss 3.364 lr 1.50e-04 2394 tok/s
+[2026-11-13 09:18:51] EVAL step 17715: dev BLEU 22.73 {'en-es': 21.8, 'en-fr': 19.1, 'es-en': 29.3, 'es-fr': 21.1, 'fr-en': 24.1, 'fr-es': 21.1}
+[2026-11-13 09:18:51]      sample ->fr: ["La voiture a besoin d'une nouvelle batterie.", 'Faites mon nom est de chanaky.', 'Où est-ce que la gare ?']
+[2026-11-13 09:21:57] step 17800 epoch 1 batch 28029/35348 loss 3.407 lr 1.50e-04 2314 tok/s
+[2026-11-13 09:25:43] step 17900 epoch 1 batch 28229/35348 loss 3.340 lr 1.49e-04 2394 tok/s
+[2026-11-13 09:29:15] step 18000 epoch 1 batch 28429/35348 loss 3.410 lr 1.49e-04 2505 tok/s
+[2026-11-13 09:32:55] step 18100 epoch 1 batch 28629/35348 loss 3.305 lr 1.49e-04 2428 tok/s
+[2026-11-13 09:36:31] step 18200 epoch 1 batch 28829/35348 loss 3.366 lr 1.48e-04 2479 tok/s
+[2026-11-13 09:40:09] step 18300 epoch 1 batch 29029/35348 loss 3.350 lr 1.48e-04 2455 tok/s
+[2026-11-13 09:43:49] step 18400 epoch 1 batch 29229/35348 loss 3.435 lr 1.47e-04 2458 tok/s
+[2026-11-13 09:47:27] step 18500 epoch 1 batch 29429/35348 loss 3.330 lr 1.47e-04 2453 tok/s
+[2026-11-13 09:49:11] EVAL step 18538: dev BLEU 24.26 {'en-es': 23.0, 'en-fr': 21.8, 'es-en': 30.7, 'es-fr': 22.8, 'fr-en': 24.3, 'fr-es': 23.0}  -> new best, exported
+[2026-11-13 09:49:11]      sample ->fr: ["La voiture a besoin d'une nouvelle battery.", 'Faites mon nom est chanaky.', 'Où est la gare de train ?']
+[2026-11-13 09:51:27] step 18600 epoch 1 batch 29629/35348 loss 3.380 lr 1.47e-04 2245 tok/s
+[2026-11-13 09:55:03] step 18700 epoch 1 batch 29829/35348 loss 3.299 lr 1.46e-04 2470 tok/s
+[2026-11-13 09:58:46] step 18800 epoch 1 batch 30029/35348 loss 3.384 lr 1.46e-04 2391 tok/s
+[2026-11-13 10:02:33] step 18900 epoch 1 batch 30229/35348 loss 3.312 lr 1.45e-04 2376 tok/s
+[2026-11-13 10:06:16] step 19000 epoch 1 batch 30429/35348 loss 3.416 lr 1.45e-04 2401 tok/s
+[2026-11-13 10:09:59] step 19100 epoch 1 batch 30629/35348 loss 3.366 lr 1.45e-04 2413 tok/s
+[2026-11-13 10:13:33] step 19200 epoch 1 batch 30829/35348 loss 3.311 lr 1.44e-04 2465 tok/s
+[2026-11-13 10:17:09] step 19300 epoch 1 batch 31029/35348 loss 3.341 lr 1.44e-04 2480 tok/s
+[2026-11-13 10:19:24] EVAL step 19356: dev BLEU 23.93 {'en-es': 22.8, 'en-fr': 21.0, 'es-en': 30.4, 'es-fr': 22.5, 'fr-en': 23.4, 'fr-es': 23.9}
+[2026-11-13 10:19:24]      sample ->fr: ["La voiture a besoin d'une nouvelle batterie.", "C'est mon nom.", 'Où est la gare ?']
+[2026-11-13 10:21:00] step 19400 epoch 1 batch 31229/35348 loss 3.319 lr 1.44e-04 2299 tok/s
+[2026-11-13 10:24:43] step 19500 epoch 1 batch 31429/35348 loss 3.281 lr 1.43e-04 2391 tok/s
+[2026-11-13 10:28:15] step 19600 epoch 1 batch 31629/35348 loss 3.397 lr 1.43e-04 2495 tok/s
+[2026-11-13 10:31:59] step 19700 epoch 1 batch 31829/35348 loss 3.278 lr 1.42e-04 2395 tok/s
+[2026-11-13 10:35:49] step 19800 epoch 1 batch 32029/35348 loss 3.312 lr 1.42e-04 2334 tok/s
+[2026-11-13 10:39:23] step 19900 epoch 1 batch 32229/35348 loss 3.296 lr 1.42e-04 2487 tok/s
+[2026-11-13 10:43:13] step 20000 epoch 1 batch 32429/35348 loss 3.365 lr 1.41e-04 2334 tok/s
+[2026-11-13 10:44:37] EVAL step 20031: dev BLEU 23.84 {'en-es': 22.1, 'en-fr': 22.8, 'es-en': 29.6, 'es-fr': 22.4, 'fr-en': 23.4, 'fr-es': 22.1}
+[2026-11-13 10:44:37]      sample ->fr: ["La voiture a besoin d'une nouvelle batteine.", 'Mon nom est chanaky.', 'Où est-elle la gare ?']
+[2026-11-13 10:44:37] stopped at step 20031; best dev BLEU 24.26; model in D:\Chanakyha V\TCS\Stellantis\Translator\TranslatorService\models\nmt-en-es-fr
+[2026-11-13 12:30:16] resumed at step 20031 (epoch 2, best dev BLEU -1.00)
+[2026-11-13 12:30:16] model: 10.9M parameters, 4,024,940 training examples, device NVIDIA GeForce MX130, 3000x2 tokens per step, mix {'Tatoeba': 1.0, 'NewsCommentary': 0.5, 'Europarl': 0.15, 'Domain': 8.0, 'Names': 1.0}
+[2026-11-13 12:32:26] step 20100 epoch 2 batch 137/15559 loss 3.341 lr 1.41e-04 2871 tok/s
+[2026-11-13 12:35:09] step 20200 epoch 2 batch 337/15559 loss 3.424 lr 1.41e-04 3256 tok/s
+[2026-11-13 12:37:48] step 20300 epoch 2 batch 537/15559 loss 3.445 lr 1.40e-04 3289 tok/s
+[2026-11-13 12:40:53] step 20400 epoch 2 batch 737/15559 loss 3.390 lr 1.40e-04 2931 tok/s
+[2026-11-13 12:44:10] step 20500 epoch 2 batch 937/15559 loss 3.329 lr 1.40e-04 2674 tok/s
+[2026-11-13 12:50:51] step 20600 epoch 2 batch 1137/15559 loss 3.415 lr 1.39e-04 1327 tok/s
+[2026-11-13 12:53:34] step 20700 epoch 2 batch 1337/15559 loss 3.367 lr 1.39e-04 3256 tok/s
+[2026-11-13 12:57:13] step 20800 epoch 2 batch 1537/15559 loss 3.400 lr 1.39e-04 2451 tok/s
+[2026-11-13 13:00:46] EVAL step 20840: dev BLEU 24.58 {'en-es': 22.0, 'en-fr': 23.0, 'es-en': 31.0, 'es-fr': 22.1, 'fr-en': 25.0, 'fr-es': 23.7}  -> new best, exported
+[2026-11-13 13:00:46]      sample ->fr: ["La voiture a besoin d'une nouvelle batterie.", 'Bonjour est mon nom est Ronaky.', 'Notre concession est fermé lundi pour le maintien.', 'Où est la station de train ?']
+[2026-11-13 13:04:55] step 20900 epoch 2 batch 1737/15559 loss 3.338 lr 1.38e-04 1183 tok/s
+[2026-11-13 13:07:44] step 21000 epoch 2 batch 1937/15559 loss 3.301 lr 1.38e-04 3159 tok/s
+[2026-11-13 13:10:33] step 21100 epoch 2 batch 2137/15559 loss 3.316 lr 1.38e-04 3157 tok/s
+[2026-11-13 13:17:26] step 21200 epoch 2 batch 2337/15559 loss 3.389 lr 1.37e-04 1301 tok/s
+[2026-11-13 13:20:15] step 21300 epoch 2 batch 2537/15559 loss 3.357 lr 1.37e-04 3155 tok/s
+[2026-11-13 13:23:12] step 21400 epoch 2 batch 2737/15559 loss 3.273 lr 1.37e-04 3003 tok/s
+[2026-11-13 13:26:05] step 21500 epoch 2 batch 2937/15559 loss 3.381 lr 1.36e-04 3134 tok/s
+[2026-11-13 13:29:03] step 21600 epoch 2 batch 3137/15559 loss 3.339 lr 1.36e-04 3054 tok/s
+[2026-11-13 13:31:02] EVAL step 21663: dev BLEU 24.32 {'en-es': 22.4, 'en-fr': 22.1, 'es-en': 31.4, 'es-fr': 22.3, 'fr-en': 25.0, 'fr-es': 23.2}
+[2026-11-13 13:31:02]      sample ->fr: ["La voiture a besoin d'une nouvelle batterie.", 'Is me nom est Shanaky.', 'Notre concession est fermé lundi pour la préservation.', 'Où est la gare de train ?']
+[2026-11-13 13:31:59] step 21700 epoch 2 batch 3337/15559 loss 3.319 lr 1.36e-04 2994 tok/s
+[2026-11-13 13:37:15] step 21800 epoch 2 batch 3537/15559 loss 3.375 lr 1.35e-04 1690 tok/s
+[2026-11-13 13:40:15] step 21900 epoch 2 batch 3737/15559 loss 3.308 lr 1.35e-04 2955 tok/s
+[2026-11-13 13:43:02] step 22000 epoch 2 batch 3937/15559 loss 3.359 lr 1.35e-04 3231 tok/s
+[2026-11-13 13:45:54] step 22100 epoch 2 batch 4137/15559 loss 3.379 lr 1.35e-04 3075 tok/s
+[2026-11-13 13:48:51] step 22200 epoch 2 batch 4337/15559 loss 3.276 lr 1.34e-04 3059 tok/s
+[2026-11-13 13:54:09] step 22300 epoch 2 batch 4537/15559 loss 3.378 lr 1.34e-04 1672 tok/s
+[2026-11-13 13:57:08] step 22400 epoch 2 batch 4737/15559 loss 3.244 lr 1.34e-04 3019 tok/s
+[2026-11-13 14:00:00] step 22500 epoch 2 batch 4937/15559 loss 3.430 lr 1.33e-04 3121 tok/s
+[2026-11-13 14:01:16] EVAL step 22536: dev BLEU 24.78 {'en-es': 23.2, 'en-fr': 21.1, 'es-en': 32.6, 'es-fr': 22.8, 'fr-en': 25.9, 'fr-es': 22.5}  -> new best, exported
+[2026-11-13 14:01:16]      sample ->fr: ["La voiture a besoin d'une nouvelle battery.", "Salute m'appelle Chanaky.", 'Notre concession est fermé lundi pour la maintenance.', 'Où est-elle la gare ?']
+[2026-11-13 14:03:11] step 22600 epoch 2 batch 5137/15559 loss 3.380 lr 1.33e-04 2843 tok/s
+[2026-11-13 14:06:00] step 22700 epoch 2 batch 5337/15559 loss 3.341 lr 1.33e-04 3178 tok/s
+[2026-11-13 14:10:51] step 22800 epoch 2 batch 5537/15559 loss 3.398 lr 1.32e-04 1856 tok/s
+[2026-11-13 14:14:15] step 22900 epoch 2 batch 5737/15559 loss 3.269 lr 1.32e-04 2626 tok/s
+[2026-11-13 14:16:58] step 23000 epoch 2 batch 5937/15559 loss 3.343 lr 1.32e-04 3265 tok/s
+[2026-11-13 14:19:53] step 23100 epoch 2 batch 6137/15559 loss 3.287 lr 1.32e-04 3047 tok/s
+[2026-11-13 14:22:46] step 23200 epoch 2 batch 6337/15559 loss 3.289 lr 1.31e-04 3000 tok/s
+[2026-11-13 14:27:10] step 23300 epoch 2 batch 6537/15559 loss 3.273 lr 1.31e-04 1995 tok/s
+[2026-11-13 14:30:01] step 23400 epoch 2 batch 6737/15559 loss 3.384 lr 1.31e-04 3179 tok/s
+[2026-11-13 14:31:30] EVAL step 23443: dev BLEU 25.26 {'en-es': 24.0, 'en-fr': 23.4, 'es-en': 33.7, 'es-fr': 22.3, 'fr-en': 24.5, 'fr-es': 23.3}  -> new best, exported
+[2026-11-13 14:31:30]      sample ->fr: ["La voiture a besoin d'une nouvelle batterie.", 'Où mon nom est le Chinaky.', 'Notre concession est fermé lundi pour le maintien.', 'Où est la gare de train ?']
+[2026-11-13 14:33:04] step 23500 epoch 2 batch 6937/15559 loss 3.283 lr 1.30e-04 2925 tok/s
+[2026-11-13 14:36:08] step 23600 epoch 2 batch 7137/15559 loss 3.330 lr 1.30e-04 2919 tok/s
+[2026-11-13 14:38:53] step 23700 epoch 2 batch 7337/15559 loss 3.381 lr 1.30e-04 3248 tok/s
+[2026-11-13 14:41:36] step 23800 epoch 2 batch 7537/15559 loss 3.315 lr 1.30e-04 3234 tok/s
+[2026-11-13 14:44:23] step 23900 epoch 2 batch 7737/15559 loss 3.296 lr 1.29e-04 3143 tok/s
+[2026-11-13 14:47:16] step 24000 epoch 2 batch 7937/15559 loss 3.298 lr 1.29e-04 3138 tok/s
+[2026-11-13 14:50:11] step 24100 epoch 2 batch 8137/15559 loss 3.348 lr 1.29e-04 3011 tok/s
+[2026-11-13 14:53:06] step 24200 epoch 2 batch 8337/15559 loss 3.260 lr 1.29e-04 3063 tok/s
+[2026-11-13 14:56:03] step 24300 epoch 2 batch 8537/15559 loss 3.322 lr 1.28e-04 3046 tok/s
+[2026-11-13 14:59:00] step 24400 epoch 2 batch 8737/15559 loss 3.297 lr 1.28e-04 3065 tok/s
+[2026-11-13 15:01:44] EVAL step 24486: dev BLEU 25.92 {'en-es': 24.1, 'en-fr': 24.1, 'es-en': 35.3, 'es-fr': 23.1, 'fr-en': 24.5, 'fr-es': 24.4}  -> new best, exported
+[2026-11-13 15:01:44]      sample ->fr: ["La voiture a besoin d'une nouvelle batterie.", "Je m'appelle Ronakyha.", 'Notre concession est fermée lundi pour le maintien.', 'Où est la gare de train ?']
+[2026-11-13 15:02:09] step 24500 epoch 2 batch 8937/15559 loss 3.258 lr 1.28e-04 2845 tok/s
+[2026-11-13 15:05:08] step 24600 epoch 2 batch 9137/15559 loss 3.243 lr 1.28e-04 2986 tok/s
+[2026-11-13 15:08:01] step 24700 epoch 2 batch 9337/15559 loss 3.337 lr 1.27e-04 3077 tok/s
+[2026-11-13 15:10:48] step 24800 epoch 2 batch 9537/15559 loss 3.394 lr 1.27e-04 3188 tok/s
+[2026-11-13 15:13:43] step 24900 epoch 2 batch 9737/15559 loss 3.341 lr 1.27e-04 3048 tok/s
+[2026-11-13 15:16:24] step 25000 epoch 2 batch 9937/15559 loss 3.366 lr 1.26e-04 3319 tok/s
+[2026-11-13 15:19:08] step 25100 epoch 2 batch 10137/15559 loss 3.296 lr 1.26e-04 3249 tok/s
+[2026-11-13 15:22:01] step 25200 epoch 2 batch 10337/15559 loss 3.292 lr 1.26e-04 3138 tok/s
+[2026-11-13 15:24:54] step 25300 epoch 2 batch 10537/15559 loss 3.277 lr 1.26e-04 3126 tok/s
+[2026-11-13 15:27:44] step 25400 epoch 2 batch 10737/15559 loss 3.293 lr 1.25e-04 3144 tok/s
+[2026-11-13 15:30:30] EVAL step 25489: dev BLEU 25.47 {'en-es': 23.2, 'en-fr': 22.3, 'es-en': 33.8, 'es-fr': 22.9, 'fr-en': 25.0, 'fr-es': 24.5}
+[2026-11-13 15:30:30]      sample ->fr: ["La voiture a besoin d'une nouvelle batterie.", "Salut, je m'appelle Chanakyha.", 'Notre concession est fermé lundi pour le maintien.', 'Où est-elle la gare de train ?']
+[2026-11-13 15:30:30] stopped at step 25489; best dev BLEU 25.92; model in D:\Chanakyha V\TCS\Stellantis\Translator\TranslatorService\models\nmt-en-es-fr

@@ -2,10 +2,14 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net10.0-windows</TargetFramework>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <!-- Runs on the .NET 5 Desktop Runtime; if only a newer runtime is installed, use that one -->
+    <RollForward>Major</RollForward>
+    <!-- .NET 5 is out of support; building it with a newer SDK only gives an informational warning -->
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
 </Project>
