@@ -105,7 +105,7 @@ To accept connections from other machines, set the host before starting, and all
 in Windows Firewall:
 
 ```powershell
-set TRANSLATOR_HOST=0.0.0.0
+$env:TRANSLATOR_HOST = "0.0.0.0"     # in cmd.exe: set TRANSLATOR_HOST=0.0.0.0
 start_cluster.bat 4
 ```
 
@@ -260,6 +260,6 @@ The translated text is never written to the logs; only counts and languages are.
 | `/health` returns `model_missing` | `models/nmt-en-es-fr/` or `models/lid/` is missing: copy them, or train them ([MODEL_TRAINING.md](MODEL_TRAINING.md)) |
 | `Python environment not found` from the `.bat` files | Create `.venv` (section 2) |
 | Port 8000 already in use | `start_api.bat 8080` or `cluster.py --port 8080`, and start the app with `--url http://127.0.0.1:8080` |
-| Other PCs cannot connect | `set TRANSLATOR_HOST=0.0.0.0` and open the port in Windows Firewall |
+| Other PCs cannot connect | `$env:TRANSLATOR_HOST = "0.0.0.0"` (cmd.exe: `set TRANSLATOR_HOST=0.0.0.0`) and open the port in Windows Firewall |
 | Slow under load | Use `start_cluster.bat` with more instances (up to the number of cores), or `TRANSLATOR_BEAM_SIZE=1` |
 | `/lb/status` shows an instance unhealthy | Check `logs/api-80xx.log` and `logs/cluster.log`; the supervisor restarts crashed instances automatically |

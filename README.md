@@ -13,6 +13,7 @@ Offline translation between English, Spanish and French with automatic language 
 
 | Document | Contents |
 |----------|----------|
+| [docs/SETUP_GUIDE.md](docs/SETUP_GUIDE.md) | **Start here:** step-by-step setup and running, from a new PC to a working translator |
 | [docs/PYTHON_API_SETUP.md](docs/PYTHON_API_SETUP.md) | Install and run the Python API: single instance or load-balanced cluster, API reference, configuration, logs, tests, troubleshooting |
 | [docs/DOTNET_APP_SETUP.md](docs/DOTNET_APP_SETUP.md) | Build and run the .NET 5 desktop app, standalone build, usage, how it connects, troubleshooting |
 | [docs/MODEL_TRAINING.md](docs/MODEL_TRAINING.md) | Training both models from scratch: datasets (downloaded from GitHub only), every script and reference file, settings, exact training history, scores |
