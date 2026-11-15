@@ -1,0 +1,26 @@
+﻿model: {'step': 22084, 'dev_bleu': 29.98, 'dev_bleu_per_direction': {'en-es': 30.6, 'en-fr': 29.0, 'es-en': 36.9, 'es-fr': 26.9, 'fr-en': 30.9, 'fr-es': 25.8}, 'hours': 13.86}  beam 4
+
+direction  corpus              n   BLEU   chrF
+en->es      Domain             45   60.4   76.9
+en->es      Europarl          500   30.3   56.7
+en->es      Tatoeba           500   38.7   60.7
+en->fr      Domain             45   64.7   79.0
+en->fr      Europarl          500   27.3   56.3
+en->fr      Tatoeba           500   42.3   61.1
+es->en      Domain             45   62.5   74.5
+es->en      Europarl          500   30.8   57.1
+es->en      Tatoeba           500   44.5   62.3
+es->fr      Domain             45   54.8   74.4
+es->fr      Europarl          500   27.5   55.9
+es->fr      Tatoeba           500   37.8   59.1
+fr->en      Domain             45   60.0   74.5
+fr->en      Europarl          500   28.8   55.8
+fr->en      Tatoeba           500   47.3   63.5
+fr->es      Domain             45   53.3   73.6
+fr->es      Europarl          500   29.4   56.2
+fr->es      Tatoeba           500   35.0   57.9
+
+Domain          BLEU 59.9  chrF 75.5  (270 sentences)
+Europarl        BLEU 29.0  chrF 56.3  (3000 sentences)
+Tatoeba         BLEU 41.0  chrF 60.7  (3000 sentences)
+all: BLEU 31.7  chrF 57.4  (6270 sentences in 570s)

@@ -19,16 +19,16 @@
     "fr"
   ],
   "training": {
-    "step": 24486,
-    "dev_bleu": 25.92,
+    "step": 26881,
+    "dev_bleu": 31.59,
     "dev_bleu_per_direction": {
-      "en-es": 24.1,
-      "en-fr": 24.1,
-      "es-en": 35.3,
-      "es-fr": 23.1,
-      "fr-en": 24.5,
-      "fr-es": 24.4
+      "en-es": 31.5,
+      "en-fr": 31.4,
+      "es-en": 36.7,
+      "es-fr": 28.5,
+      "fr-en": 33.8,
+      "fr-es": 26.4
     },
-    "hours": 18.12
+    "hours": 16.84
   }
 }

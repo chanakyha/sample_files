@@ -1,26 +1,188 @@
-model: {'step': 24486, 'dev_bleu': 25.92, 'dev_bleu_per_direction': {'en-es': 24.1, 'en-fr': 24.1, 'es-en': 35.3, 'es-fr': 23.1, 'fr-en': 24.5, 'fr-es': 24.4}, 'hours': 18.12}  beam 4
+﻿model: {'step': 26881, 'dev_bleu': 31.59, 'dev_bleu_per_direction': {'en-es': 31.5, 'en-fr': 31.4, 'es-en': 36.7, 'es-fr': 28.5, 'fr-en': 33.8, 'fr-es': 26.4}, 'hours': 16.84}  beam 4
 
 direction  corpus              n   BLEU   chrF
-en->es      Domain             45   61.8   77.9
-en->es      NewsCommentary    500   26.7   54.0
-en->es      Tatoeba           500   35.4   57.6
-en->fr      Domain             45   58.4   76.7
-en->fr      NewsCommentary    500   19.5   48.4
-en->fr      Tatoeba           500   35.6   56.6
-es->en      Domain             45   60.6   74.1
-es->en      NewsCommentary    500   24.6   53.7
-es->en      Tatoeba           500   42.0   60.2
-es->fr      Domain             45   57.8   74.2
-es->fr      NewsCommentary    500   21.0   50.6
-es->fr      Tatoeba           500   38.5   58.4
-fr->en      Domain             45   63.6   77.2
-fr->en      NewsCommentary    500   20.6   48.8
-fr->en      Tatoeba           500   41.3   58.3
-fr->es      Domain             45   54.7   74.7
-fr->es      NewsCommentary    500   22.5   51.5
-fr->es      Tatoeba           500   35.2   57.3
+en->es      Domain             45   66.7   83.9
+      src: The car needs a new battery.
+      out: El coche necesita una nueva batería.
+      ref: El coche necesita una batería nueva.
+      src: Your car will be ready tomorrow morning.
+      out: Su coche estará listo mañana por la mañana.
+      ref: Su coche estará listo mañana por la mañana.
+      src: The engine makes a strange noise when starting.
+      out: El motor hace un ruido extraño al arrancar.
+      ref: El motor hace un ruido extraño al arrancar.
+en->es      Europarl          500   31.5   58.0
+      src: Agricultural policy also has long-term considerations and plans and this type of security is something we must pass on to agricultural undertakings.
+      out: La política de Agricultura también tiene consideración a largo plazo y planes y este tipo de seguridad es algo que debemos pasar a las empresas agrícolas.
+      ref: La política agrícola también tiene consideraciones y planes a largo plazo y debemos dar este tipo de seguridad a las empresas agrícolas.
+      src: On 3 February, the Commission adopted a package on Greece which will go to the Council early next week.
+      out: El 3 de febrero, la Comisión adoptó un paquete sobre Grecia que va a ir al Consejo la próxima semana.
+      ref: El 3 de febrero, la Comisión adoptó un paquete de medidas sobre Grecia que se presentará ante el Consejo a principios de la próxima semana.
+      src: I hope that the Commissioner will not fob us off again with a bromide that our textile industry has had ten years to adjust, for that would be the height of oversimplification.
+      out: Espero que el Comisario no nos recurrará de nuevo con una bromide que nuestra industria textile ha tenido diez años para adaptarse, por eso sería el height de oversimplificación.
+      ref: Espero que la Comisaria no nos engatuse otra vez con la manida frase de que nuestra industria textil ha tenido diez años para adaptarse, porque eso sería el colmo de la simplificación excesiva.
+en->es      Tatoeba           500   39.9   61.2
+      src: Little is known of this curious plant.
+      out: El little es conocido de esta planta curosa.
+      ref: Se sabe muy poco sobre esta extraña planta.
+      src: Read the passage on page 22, please.
+      out: Read el pastel en la página 22, por favor.
+      ref: Lee el pasaje de la página 22, por favor.
+      src: My father grew old.
+      out: Mi padre creció viejo.
+      ref: Mi padre se hizo viejo.
+en->fr      Domain             45   71.7   85.9
+      src: The car needs a new battery.
+      out: La voiture a besoin d'une nouvelle batterie.
+      ref: La voiture a besoin d'une nouvelle batterie.
+      src: Your car will be ready tomorrow morning.
+      out: Ta voiture sera prête demain matin.
+      ref: La voiture sera prête demain matin.
+      src: The engine makes a strange noise when starting.
+      out: Le moteur fait un bruit étrange au démarrage.
+      ref: Le moteur fait un bruit étrange au démarrage.
+en->fr      Europarl          500   28.1   56.7
+      src: However, according to the statistics, the situation is probably worse in other parts of the country which I did not visit.
+      out: Cependant, selon les statistiques, la situation est probablement pire dans d’autres parties du pays que je n’ai pas visité.
+      ref: Cependant, selon les statistiques, la situation est probablement pire dans d’autres parties du pays que je n’ai pas visitées.
+      src: Mr President, Commissioner, ladies and gentlemen, I would like to congratulate Mr Pomés Ruiz for producing such a clear report.
+      out: Monsieur le Président, Monsieur le Commissaire, Mesdames et Messieurs, je voudrais féliciter M. Pomés Ruiz pour produire un rapport clair.
+      ref: Monsieur le Président, Monsieur le Commissaire, chers collègues, le rapport d’initiative de M.
+      src: The question we are left with today is: what will come of this?
+      out: La question que nous sommes partis avec aujourd'hui est : Que arrivera-t-il ?
+      ref: La question qui se pose aujourd'hui est la suivante : quelle est la solution adéquate ?
+en->fr      Tatoeba           500   42.6   61.1
+      src: Tom is writing a letter to Mary.
+      out: Tom écrit une lettre à Mary.
+      ref: Tom est en train d'écrire une lettre à Mary.
+      src: I'm not your friend.
+      out: Je ne suis pas ton ami.
+      ref: Je ne suis pas votre ami.
+      src: She'll be back soon.
+      out: Elle sera bientôt de retour.
+      ref: Elle sera bientôt de retour.
+es->en      Domain             45   67.8   81.2
+      src: El coche necesita una batería nueva.
+      out: The car needs a new battery.
+      ref: The car needs a new battery.
+      src: Su coche estará listo mañana por la mañana.
+      out: Your car will be ready tomorrow morning.
+      ref: Your car will be ready tomorrow morning.
+      src: El motor hace un ruido extraño al arrancar.
+      out: The engine makes a strange noise when starting.
+      ref: The engine makes a strange noise when starting.
+es->en      Europarl          500   31.4   57.8
+      src: La política agrícola también tiene consideraciones y planes a largo plazo y debemos dar este tipo de seguridad a las empresas agrícolas.
+      out: agricultural policy also has considerations and long-term plans, and we must give this kind of security to agricultural companies.
+      ref: Agricultural policy also has long-term considerations and plans and this type of security is something we must pass on to agricultural undertakings.
+      src: El 3 de febrero, la Comisión adoptó un paquete de medidas sobre Grecia que se presentará ante el Consejo a principios de la próxima semana.
+      out: On 3 February, the Commission adopted a package of measures on Greece which will be presented to the Council at the beginning of the next week.
+      ref: On 3 February, the Commission adopted a package on Greece which will go to the Council early next week.
+      src: Espero que la Comisaria no nos engatuse otra vez con la manida frase de que nuestra industria textil ha tenido diez años para adaptarse, porque eso sería el colmo de la simplificación excesiva.
+      out: I hope that the Commissioner does not take us again with the manida sentence that our textil industry has been ten years to adapt, because it would be the collection of excessive simplification.
+      ref: I hope that the Commissioner will not fob us off again with a bromide that our textile industry has had ten years to adjust, for that would be the height of oversimplification.
+es->en      Tatoeba           500   44.8   62.8
+      src: Se sabe muy poco sobre esta extraña planta.
+      out: You know very little about this strange plan.
+      ref: Little is known of this curious plant.
+      src: Lee el pasaje de la página 22, por favor.
+      out: Please read the pass of page 22.
+      ref: Read the passage on page 22, please.
+      src: Mi padre se hizo viejo.
+      out: My father got old.
+      ref: My father grew old.
+es->fr      Domain             45   64.4   80.2
+      src: El coche necesita una batería nueva.
+      out: La voiture a besoin d'une nouvelle batterie.
+      ref: La voiture a besoin d'une nouvelle batterie.
+      src: Su coche estará listo mañana por la mañana.
+      out: Votre voiture sera prête demain matin.
+      ref: La voiture sera prête demain matin.
+      src: El motor hace un ruido extraño al arrancar.
+      out: Le moteur fait un bruit étrange au démarrage.
+      ref: Le moteur fait un bruit étrange au démarrage.
+es->fr      Europarl          500   28.6   56.4
+      src: Lo que nuestras empresas necesitan en Europa es que se les faciliten las cosas, no más burocracia.
+      out: Ce que nos entreprises ont besoin de l’Europe, c’est que les choses, non plus de bureaucratie.
+      ref: Ce dont nos entreprises ont besoin en Europe c’est d’un tapis rouge et de bureaucratie.
+      src: Muchas gracias, señor Belder.
+      out: Merci beaucoup, Monsieur Belder.
+      ref: Merci beaucoup, Monsieur Belder.
+      src: Como usted bien dice, no estamos debatiendo las enmiendas, así que procedamos a la votación.
+      out: Comme vous le dites, nous ne parlons pas les amendements, nous n’avons pas discuté du vote.
+      ref: Comme vous l’avez déclaré à juste titre, nous ne débattons pas des amendements. Nous passons donc au vote.
+es->fr      Tatoeba           500   38.8   59.7
+      src: Handicap hace que Go sea más agradable para jugadores de diferentes niveles de habilidad.
+      out: Handicap fait que Go soit plus agréable pour les joueurs de différents niveaux de capacité.
+      ref: Le handicap rend le Go plus agréable pour les joueurs avec une certaine différence de capacité.
+      src: El gerente tiene muchos problemas.
+      out: L'gerente a beaucoup de problèmes.
+      ref: Le gérant fait face à de nombreux problèmes.
+      src: Correr mucho me da sed.
+      out: J'ai beaucoup envie de me coucher.
+      ref: Faire souvent de la course à pied me donne soif.
+fr->en      Domain             45   71.4   82.6
+      src: La voiture a besoin d'une nouvelle batterie.
+      out: The car needs a new battery.
+      ref: The car needs a new battery.
+      src: La voiture sera prête demain matin.
+      out: The car will be ready tomorrow morning.
+      ref: Your car will be ready tomorrow morning.
+      src: Le moteur fait un bruit étrange au démarrage.
+      out: The engine makes a strange noise when starting.
+      ref: The engine makes a strange noise when starting.
+fr->en      Europarl          500   30.0   56.8
+      src: Cependant, selon les statistiques, la situation est probablement pire dans d’autres parties du pays que je n’ai pas visitées.
+      out: However, according to statistics, the situation is probably worse in other parties in the country that I have not visited.
+      ref: However, according to the statistics, the situation is probably worse in other parts of the country which I did not visit.
+      src: Monsieur le Président, Monsieur le Commissaire, chers collègues, le rapport d’initiative de M.
+      out: Mr President, Commissioner, ladies and gentlemen, the report of Mr President.
+      ref: Mr President, Commissioner, ladies and gentlemen, I would like to congratulate Mr Pomés Ruiz for producing such a clear report.
+      src: La question qui se pose aujourd'hui est la suivante : quelle est la solution adéquate ?
+      out: The question that is today’s following: What's the proper solution?
+      ref: The question we are left with today is: what will come of this?
+fr->en      Tatoeba           500   47.9   63.6
+      src: Tom est en train d'écrire une lettre à Mary.
+      out: Tom is writing a letter to Mary.
+      ref: Tom is writing a letter to Mary.
+      src: Je ne suis pas votre ami.
+      out: I'm not your friend.
+      ref: I'm not your friend.
+      src: Elle sera bientôt de retour.
+      out: She will be back soon.
+      ref: She'll be back soon.
+fr->es      Domain             45   60.3   78.9
+      src: La voiture a besoin d'une nouvelle batterie.
+      out: El coche necesita una nueva batería.
+      ref: El coche necesita una batería nueva.
+      src: La voiture sera prête demain matin.
+      out: El coche estará listo mañana por la mañana.
+      ref: Su coche estará listo mañana por la mañana.
+      src: Le moteur fait un bruit étrange au démarrage.
+      out: El motor hace un ruido extraño al arrancar.
+      ref: El motor hace un ruido extraño al arrancar.
+fr->es      Europarl          500   29.9   56.8
+      src: Ce dont nos entreprises ont besoin en Europe c’est d’un tapis rouge et de bureaucratie.
+      out: Lo que necesitamos nuestras empresas en Europa es una tapa roja y burocracia.
+      ref: Lo que nuestras empresas necesitan en Europa es que se les faciliten las cosas, no más burocracia.
+      src: Merci beaucoup, Monsieur Belder.
+      out: Muchas gracias, señor Belder.
+      ref: Muchas gracias, señor Belder.
+      src: Comme vous l’avez déclaré à juste titre, nous ne débattons pas des amendements. Nous passons donc au vote.
+      out: Como ya ha dicho, no estamos debatiendo las enmiendas. Por lo tanto, pasamos a la votación.
+      ref: Como usted bien dice, no estamos debatiendo las enmiendas, así que procedamos a la votación.
+fr->es      Tatoeba           500   36.3   59.1
+      src: Le handicap rend le Go plus agréable pour les joueurs avec une certaine différence de capacité.
+      out: La discapacidad hace el Go más agradable para los jugadores con una cierta diferencia de capacidad.
+      ref: Handicap hace que Go sea más agradable para jugadores de diferentes niveles de habilidad.
+      src: Le gérant fait face à de nombreux problèmes.
+      out: El gérant está enfrentado a muchos problemas.
+      ref: El gerente tiene muchos problemas.
+      src: Faire souvent de la course à pied me donne soif.
+      out: A menudo se me da la carrera a pie.
+      ref: Correr mucho me da sed.
 
-Domain          BLEU 59.8  chrF 75.8  (270 sentences)
-NewsCommentary  BLEU 22.7  chrF 51.2  (3000 sentences)
-Tatoeba         BLEU 38.1  chrF 58.0  (3000 sentences)
-all: BLEU 26.3  chrF 52.8  (6270 sentences in 236s)
+Domain          BLEU 67.7  chrF 82.1  (270 sentences)
+Europarl        BLEU 29.9  chrF 57.1  (3000 sentences)
+Tatoeba         BLEU 41.7  chrF 61.2  (3000 sentences)
+all: BLEU 32.7  chrF 58.2  (6270 sentences in 169s)

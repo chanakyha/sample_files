@@ -1,0 +1,22 @@
+﻿Tatoeba         en-fr:   295,376 clean pairs
+NewsCommentary  en-fr:   144,068 clean pairs
+Europarl        en-fr:   300,000 clean pairs
+Tatoeba         en-es:   229,281 clean pairs
+NewsCommentary  en-es:    45,963 clean pairs
+Europarl        en-es:   300,000 clean pairs
+Tatoeba         es-fr:    53,096 clean pairs
+NewsCommentary  es-fr:   239,128 clean pairs
+Europarl        es-fr:   300,000 clean pairs
+  Tatoeba          1,316,334 examples
+  NewsCommentary     849,762 examples
+  Europarl         1,799,956 examples
+training examples (both directions): 3,966,052
+dev: 2,400 sentences
+test: 6,000 sentences
+reusing existing tokenizer
+tokenizer: 16000 pieces
+kept 3,965,988 of 3,966,052 within 128 tokens
+target tokens per epoch: 103,114,973
+  Tatoeba           13,622,788 target tokens
+  NewsCommentary    30,573,492 target tokens
+  Europarl          58,918,693 target tokens

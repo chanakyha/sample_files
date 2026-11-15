@@ -1,7 +1,8 @@
 """Step 4: train our own language detector for the 24 EU languages.
 
-Data: Tatoeba sentences per language, plus OPUS QED subtitles for languages with few
-Tatoeba sentences (from download_data.py). Balanced to --per-lang sentences per language.
+Data (training/data/raw/mono/<lang>.txt from download_data.py, all from GitHub): Tatoeba
+sentences, Universal Dependencies treebank sentences and, for de/it/nl/pt, Europarl sentences.
+Balanced to --per-lang sentences per language (small languages are oversampled).
 
 Robustness augmentation (applied to a copy of part of the data):
   * random person / place / brand names inserted (names are not evidence of a language)
@@ -9,7 +10,7 @@ Robustness augmentation (applied to a copy of part of the data):
   * cut down to the first 1-4 words (very short input)
 
 Plus training/lid_phrases.tsv: greetings and short chat phrases in all 24 languages (Tatoeba has
-few of them, while subtitles of small languages are full of "hi", "ok", "no"), repeated with
+few of them, and treebank / parliament text has almost none), repeated with
 names, casing and punctuation variants. Phrases that also occur in an evaluation set are
 dropped, so the evaluation stays blind.
 
@@ -22,14 +23,11 @@ Usage:  python training/train_lid.py
 from __future__ import annotations
 
 import argparse
-import bz2
-import io
 import json
 import random
 import re
 import sys
 import time
-import zipfile
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -51,12 +49,6 @@ EVAL_SETS = (CHALLENGE, EVERYDAY, EVERYDAY2)
 PHRASES = ROOT / "lid_phrases.tsv"  # hand-written greetings / short chat phrases (training)
 SEED = 7
 
-ISO3 = {
-    "bg": "bul", "cs": "ces", "da": "dan", "de": "deu", "el": "ell", "en": "eng",
-    "es": "spa", "et": "est", "fi": "fin", "fr": "fra", "ga": "gle", "hr": "hrv",
-    "hu": "hun", "it": "ita", "lt": "lit", "lv": "lvs", "mt": "mlt", "nl": "nld",
-    "pl": "pol", "pt": "por", "ro": "ron", "sk": "slk", "sl": "slv", "sv": "swe",
-}
 
 # Person and place names from many cultures, inserted into every language's sentences so the
 # model learns that foreign names are not evidence of a language. No English-word brand names
@@ -70,21 +62,14 @@ Lagos Nairobi Shanghai Seoul Peugeot Citroën Stellantis TCS Infosys BMW Toyota"
 _PUNCT = re.compile(r"[^\w\s'’-]", re.UNICODE)
 
 
-def read_tatoeba(lang: str) -> list[str]:
-    path = MONO / f"{ISO3[lang]}_sentences.tsv.bz2"
-    with bz2.open(path, "rt", encoding="utf-8") as f:
-        return [parts[2].strip() for line in f if len(parts := line.rstrip("\n").split("\t")) >= 3]
-
-
-def read_qed(lang: str) -> list[str]:
-    pair = "-".join(sorted(["en", lang]))
-    path = MONO / f"QED_{pair}.zip"
+def read_sentences(lang: str) -> list[str]:
+    """mono/<lang>.txt from download_data.py: "<source> TAB <sentence>" per line
+    (sources: tatoeba, ud, europarl)."""
+    path = MONO / f"{lang}.txt"
     if not path.is_file():
-        return []
-    with zipfile.ZipFile(path) as z:
-        name = next(n for n in z.namelist() if n.endswith(f".{pair}.{lang}"))
-        with z.open(name) as h:
-            return [l.strip() for l in io.TextIOWrapper(h, encoding="utf-8", errors="replace")]
+        sys.exit(f"{path} not found: run training/download_data.py first")
+    with open(path, encoding="utf-8", newline="\n") as f:
+        return [line.rstrip("\n").partition("\t")[2].strip() for line in f]
 
 
 def usable(s: str) -> bool:
@@ -104,13 +89,13 @@ def top_words(sentences: list[str], n: int) -> set[str]:
 
 
 def english_like(s: str, english: set[str], native: set[str], clean_native: set[str]) -> bool:
-    """Untranslated English left in another language's data (common in subtitles, e.g.
-    "Yes." or "Hello" in the Croatian file): mostly common English words that are not
-    common words of the language itself.
+    """Untranslated English left in another language's data (e.g. English titles, quotes or names of
+    organisations kept untranslated in treebank or parliament text): mostly common English words that
+    are not common words of the language itself.
 
     `native` = frequent words of the (possibly contaminated) training pool;
     `clean_native` = frequent words of the language's human-written Tatoeba sentences, used for
-    short lines because subtitle pools contain so much English that "hello" or "ok" are
+    short lines because a contaminated pool can contain so much English that English words are
     themselves frequent there."""
     words = words_of(s)
     if not words:
@@ -259,19 +244,16 @@ def main() -> None:
 
     t0 = time.time()
     train, test = [], []
-    english_top = top_words(read_tatoeba("en")[:300_000], 5000)
+    english_top = top_words(read_sentences("en")[:300_000], 5000)
     dropped = Counter()
     for li, lang in enumerate(langs):
         per_lang = args.main_per_lang if lang in main_langs else args.per_lang
-        tatoeba = list(dict.fromkeys(s for s in read_tatoeba(lang) if usable(s)))
-        rng.shuffle(tatoeba)
-        test += [(s, li) for s in tatoeba[: args.test_per_lang]]
-        pool = tatoeba[args.test_per_lang :]
+        sentences = list(dict.fromkeys(s for s in read_sentences(lang) if usable(s)))
+        rng.shuffle(sentences)
+        n_test = min(args.test_per_lang, len(sentences) // 5)  # small languages: at most 20%
+        test += [(s, li) for s in sentences[:n_test]]
+        pool = sentences[n_test:]
         clean_native = top_words(pool, 1000)
-        if len(pool) < per_lang:
-            extra = [s for s in dict.fromkeys(read_qed(lang)) if usable(s)]
-            rng.shuffle(extra)
-            pool += extra[: per_lang - len(pool)]
         if lang != "en":
             native_top = top_words(pool, 3000)
             before = len(pool)

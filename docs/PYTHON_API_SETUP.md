@@ -251,7 +251,7 @@ The translated text is never written to the logs; only counts and languages are.
 | 200-request spike | 0 errors |
 | 9-minute soak | 3,239 requests, 0 errors |
 | Chaos: 6 instances killed during load | 788 requests, 0 errors (24 automatic retries) |
-| Translation score through the API | BLEU 26.3, chrF 52.8; source language detected correctly for 99.8% |
+| Translation score through the API | BLEU 32.7, chrF 58.1; source language detected correctly for 99.4% |
 
 ## 8. Troubleshooting
 

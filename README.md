@@ -15,7 +15,7 @@ Offline translation between English, Spanish and French with automatic language 
 |----------|----------|
 | [docs/PYTHON_API_SETUP.md](docs/PYTHON_API_SETUP.md) | Install and run the Python API: single instance or load-balanced cluster, API reference, configuration, logs, tests, troubleshooting |
 | [docs/DOTNET_APP_SETUP.md](docs/DOTNET_APP_SETUP.md) | Build and run the .NET 5 desktop app, standalone build, usage, how it connects, troubleshooting |
-| [docs/MODEL_TRAINING.md](docs/MODEL_TRAINING.md) | Training both models from scratch: datasets, every script and reference file, settings, exact training history, scores |
+| [docs/MODEL_TRAINING.md](docs/MODEL_TRAINING.md) | Training both models from scratch: datasets (downloaded from GitHub only), every script and reference file, settings, exact training history, scores |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Running logic: request flow, load balancer, supervisor, desktop app, logging |
 
 Quick start (the trained models are included):

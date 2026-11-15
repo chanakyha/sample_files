@@ -35,10 +35,10 @@
     "es": 1.5,
     "fr": 1.5
   },
-  "held_out_accuracy": 0.9867,
+  "held_out_accuracy": 0.9878,
   "eval_accuracy": {
-    "lid_challenge": 0.993,
-    "lid_everyday": 0.98,
-    "lid_everyday2": 0.9857
+    "lid_challenge": 0.972,
+    "lid_everyday": 0.9733,
+    "lid_everyday2": 1.0
   }
 }

@@ -15,26 +15,31 @@ Code: [translator/nmt.py](translator/nmt.py) (model, beam search),
 [translator/lid.py](translator/lid.py) (detector), [translator/engine.py](translator/engine.py)
 (batching, cache), [app.py](app.py) (API).
 
-## Training data
+## Training data (downloaded from GitHub only)
 
-| Dataset | Used for | Licence |
-|---------|----------|---------|
-| [Tatoeba](https://opus.nlpl.eu/Tatoeba/corpus/version/Tatoeba) (OPUS) | translation: short everyday sentences | CC BY 2.0 FR |
-| [Europarl v8](https://opus.nlpl.eu/Europarl/corpus/version/Europarl) (OPUS) | translation: 300k pairs per language pair | free |
-| [News-Commentary v16](https://opus.nlpl.eu/News-Commentary/corpus/version/News-Commentary) (OPUS) | translation: general news | free |
-| [Tatoeba sentences](https://tatoeba.org/downloads) | language detection, 24 languages | CC BY 2.0 FR |
-| [QED](https://opus.nlpl.eu/QED/corpus/version/QED) (OPUS) | detection: extra data for 10 smaller languages | CC BY-NC-ND 4.0 |
+The original dataset hosts and Kaggle are blocked on the corporate network, so
+[training/download_data.py](training/download_data.py) takes everything from public GitHub
+repositories (github.com, codeload.github.com, raw.githubusercontent.com):
 
-## Training (once, needs internet only for step 1)
+| Data | GitHub repository | Used for | Licence |
+|------|-------------------|----------|---------|
+| Tatoeba (official OPUS copy) | [Helsinki-NLP/Tatoeba-Challenge](https://github.com/Helsinki-NLP/Tatoeba-Challenge) | translation: everyday sentences; detection | CC BY 2.0 FR |
+| Tatoeba en-fr / en-es | [viljarpuusepp/Attention](https://github.com/viljarpuusepp/Attention) (`fra.txt`), [doozan/spanish_data](https://github.com/doozan/spanish_data) (`sentences.tsv`) | translation: everyday sentences | CC BY 2.0 FR |
+| Europarl (XML per session) | [UDS-SFB-B6-Datasets/Multilingual-Parallel-Direct-Europarl](https://github.com/UDS-SFB-B6-Datasets/Multilingual-Parallel-Direct-Europarl) | translation: formal text (300k pairs per language pair); detection (de, it, nl, pt) | no copyright restrictions |
+| Universal Dependencies treebanks | [UniversalDependencies](https://github.com/UniversalDependencies) (28 repositories) | detection: sentences in all 24 languages | mostly CC BY-SA 4.0 (per treebank) |
+
+Details, including how the Europarl speeches are aligned: [../docs/MODEL_TRAINING.md](../docs/MODEL_TRAINING.md).
+
+## Training (needs GitHub access only for step 1)
 
 ```powershell
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements-train.txt
 
-python training\download_data.py      # ~770 MB of datasets into training/data/raw
-python training\prepare_data.py       # clean, split dev/test, train tokenizer, encode (~25 min)
-python training\train_lid.py          # language detector (~25 min)
+python training\download_data.py      # ~1.1 GB from GitHub into training/data/raw
+python training\prepare_data.py       # clean, split dev/test, train tokenizer, encode (~20 min)
+python training\train_lid.py          # language detector (~45 min)
 python training\train_nmt.py --hours 10
 ```
 
@@ -43,39 +48,42 @@ python training\train_nmt.py --hours 10
 the file `training\STOP` (it saves and exits); continue later with `--resume`. Progress is in
 `training\logs\train_nmt.log`.
 
-On a 4-core laptop CPU (i5-1035G1) training runs at ~770 target tokens/s, about 7 s per step,
-so 10 hours is ~5,000 steps (about a third of one pass over the 4M training examples). More
-hours, or a machine with a GPU, give better translations.
+On a 4-core laptop CPU (i5-1035G1) training runs at ~770 target tokens/s, about 7 s per step.
+A GPU is much faster; the shipped model was trained on a GPU.
 
 ### Training on a GPU
 
 Training (only training; the API runs on the CPU) can use an NVIDIA GPU. Install a CUDA build of
 PyTorch into a separate environment so the runtime `.venv` stays small. CUDA 12.6 builds still
-support older GPUs (e.g. GeForce MX130, compute capability 5.0):
+support older GPUs (e.g. GeForce MX130, compute capability 5.0). The shipped model:
 
 ```powershell
 python -m venv .venv-gpu
 .venv-gpu\Scripts\pip install torch --index-url https://download.pytorch.org/whl/cu126
 .venv-gpu\Scripts\pip install sentencepiece numpy sacrebleu
-.venv-gpu\Scripts\python training\train_nmt.py --hours 10 --max-tokens 3000 --accum 2 `
-    --mix "Tatoeba=3,NewsCommentary=1,Europarl=0.3"
+# phase 1: 14 h
+.venv-gpu\Scripts\python training\train_nmt.py --hours 14 --max-tokens 3000 --accum 2 `
+    --mix "Tatoeba=3,Europarl=0.3,Domain=4,Names=1"
+# phase 2: 3 h fine-tuning on the domain sentences
+.venv-gpu\Scripts\python training\train_nmt.py --resume --new-epoch --reset-best --hours 3 `
+    --max-tokens 3000 --accum 2 --mix "Tatoeba=1,Europarl=0.15,Domain=8,Names=1"
 ```
 
 `--device auto` (default) picks the GPU when available. `--max-tokens` × `--accum` is the batch
 size per step; lower `--max-tokens` if the GPU runs out of memory. `--mix` weights the corpora:
 the short everyday Tatoeba sentences are repeated, the long parliament text is subsampled.
-To continue an existing model with a new mix use `--resume --new-epoch`.
 
 ### Results
 
-Language detection (held-out Tatoeba sentences, 500 per language): **98.7%**.
-Challenge set of 143 short phrases, sentences with foreign names and casual text in many
-languages ([training/lid_challenge.tsv](training/lid_challenge.tsv)): **142/143 (99.3%)**.
+Language detection (held-out sentences, up to 500 per language): **98.8%** (Slovenian 92%, all
+others 98–100%). Challenge set of 143 short phrases, sentences with foreign names and casual
+text in many languages ([training/lid_challenge.tsv](training/lid_challenge.tsv)): **139/143**.
 Everyday English/French/Spanish phrases, greetings and car-service sentences
-([training/lid_everyday.tsv](training/lid_everyday.tsv)): **147/150 (98.0%)**; a second set of
-casual phrases ([training/lid_everyday2.tsv](training/lid_everyday2.tsv)): **69/70**. The
-remaining misses are single words that exist in several languages ("no", "non"; "hi" is Maltese
-for "she"). These sets are used only for evaluation: `train_lid.py` drops any line of
+([training/lid_everyday.tsv](training/lid_everyday.tsv)): **146/150**; a second set of casual
+phrases ([training/lid_everyday2.tsv](training/lid_everyday2.tsv)): **70/70**. The remaining
+misses are single words that exist in several languages ("no", "non"; "hi" is Maltese for
+"she") and short phrases of languages with little GitHub data ("Ďakujem pekne", "Köszönöm
+szépen"). These sets are used only for evaluation: `train_lid.py` drops any line of
 [training/lid_phrases.tsv](training/lid_phrases.tsv) (hand-written greetings and short chat
 phrases in all 24 languages, used for training) that also occurs in an evaluation set.
 
@@ -86,21 +94,22 @@ accuracy; it only decides genuinely ambiguous short input.
 Translation, held-out test set (500 sentences per direction and corpus, never seen in training;
 beam 4). "Domain" is [training/domain_test.tsv](training/domain_test.tsv): 45 hand-written
 car-service, greeting and introduction sentences (with unusual names), excluded from training.
-Model from step 24,486 (5 h CPU + 10 h GPU, then 3 h GPU fine-tuning with the domain data
-below and `--mix "Tatoeba=1,NewsCommentary=0.5,Europarl=0.15,Domain=8,Names=1"`), dev BLEU 25.92:
+Model from step 26,881 (14 h + 3 h on a GPU), dev BLEU 31.59:
 
-| Direction | Everyday (Tatoeba) BLEU / chrF | News BLEU / chrF | Domain BLEU / chrF |
+| Direction | Everyday (Tatoeba) BLEU / chrF | Formal (Europarl) BLEU / chrF | Domain BLEU / chrF |
 |-----------|------------------|------------------|------------------|
-| en → es | 35.4 / 57.6 | 26.7 / 54.0 | 61.8 / 77.9 |
-| en → fr | 35.6 / 56.6 | 19.5 / 48.4 | 58.4 / 76.7 |
-| es → en | 42.0 / 60.2 | 24.6 / 53.7 | 60.6 / 74.1 |
-| es → fr | 38.5 / 58.4 | 21.0 / 50.6 | 57.8 / 74.2 |
-| fr → en | 41.3 / 58.3 | 20.6 / 48.8 | 63.6 / 77.2 |
-| fr → es | 35.2 / 57.3 | 22.5 / 51.5 | 54.7 / 74.7 |
-| **all** | **38.1 / 58.0** | **22.7 / 51.2** | **59.8 / 75.8** |
+| en → es | 39.9 / 61.2 | 31.5 / 58.0 | 66.7 / 83.9 |
+| en → fr | 42.6 / 61.1 | 28.1 / 56.7 | 71.7 / 85.9 |
+| es → en | 44.8 / 62.8 | 31.4 / 57.8 | 67.8 / 81.2 |
+| es → fr | 38.8 / 59.7 | 28.6 / 56.4 | 64.4 / 80.2 |
+| fr → en | 47.9 / 63.6 | 30.0 / 56.8 | 71.4 / 82.6 |
+| fr → es | 36.3 / 59.1 | 29.9 / 56.8 | 60.3 / 78.9 |
+| **all** | **41.7 / 61.2** | **29.9 / 57.1** | **67.7 / 82.1** |
 
-Before the fine-tuning the same model scored 36.8 BLEU on the domain set ("dealership" became
-"friendship", names were cut off). Two generated corpora fix this
+**Overall BLEU 32.7, chrF 58.2.** The previous model (trained on the OPUS downloads) scores
+30.8 / 56.8 on the same test set (Domain 59.8).
+
+Two generated corpora teach the model the car-service domain and names
 ([training/domain_data.py](training/domain_data.py), used by `prepare_data.py`):
 
 * **Domain**: car-service, greeting and introduction sentences in en/es/fr, built from
@@ -108,10 +117,9 @@ Before the fine-tuning the same model scored 36.8 BLEU on the domain set ("deale
 * **Names**: Tatoeba pairs with "Tom"/"Mary" replaced on both sides by random real or made-up
   names, so the model learns to copy names it has never seen (e.g. "Thirunavukkarasu").
 
-Short everyday and car-service sentences are mostly correct; long news text is understandable
-but has errors. Unusual names are copied correctly most of the time but can still be cut short.
-`GET /health` shows the dev BLEU of the currently exported model; rerun
-`python training\evaluate_nmt.py` after more training.
+Short everyday and car-service sentences are mostly correct; long parliament text is
+understandable but has errors. `GET /health` shows the dev BLEU of the currently exported model;
+rerun `python training\evaluate_nmt.py` after more training.
 
 ## Run
 
@@ -192,8 +200,8 @@ python tools\score_api.py                                  # BLEU/chrF through t
 ```
 
 `tools/score_api.py` sends the whole test set through the running API with automatic
-language detection, as clients use it. Through the 4-instance cluster: **BLEU 26.3, chrF 52.8,
-source language detected correctly for 99.8%** of the 6,270 sentences. This matches the
+language detection, as clients use it. Through the 4-instance cluster: **BLEU 32.7, chrF 58.1,
+source language detected correctly for 99.4%** of the 6,270 sentences. This matches the
 direct model evaluation, so the load balancer and detection do not lower quality.
 
 ## Logs

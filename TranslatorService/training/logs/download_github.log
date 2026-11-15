@@ -1,0 +1,116 @@
+cached   tc_eng-fra_dev.txt
+cached   tc_eng-spa_dev.txt
+cached   tc_fra-spa_dev.txt
+cached   tc_eng-fra_test.txt
+cached   tc_eng-spa_test.txt
+cached   tc_fra-spa_test.txt
+cached   manythings_fra.txt
+cached   doozan_sentences.tsv
+cached   tc_bul-eng_dev.txt
+absent   tc_bul-eng_test.txt (not published for this language)
+cached   tc_ces-eng_dev.txt
+cached   tc_ces-eng_test.txt
+cached   tc_dan-eng_dev.txt
+cached   tc_dan-eng_test.txt
+cached   tc_deu-eng_dev.txt
+cached   tc_deu-eng_test.txt
+cached   tc_ell-eng_dev.txt
+cached   tc_ell-eng_test.txt
+cached   tc_eng-est_dev.txt
+absent   tc_eng-est_test.txt (not published for this language)
+cached   tc_eng-fin_dev.txt
+cached   tc_eng-fin_test.txt
+cached   tc_eng-gle_dev.txt
+absent   tc_eng-gle_test.txt (not published for this language)
+absent   tc_eng-hrv_dev.txt (not published for this language)
+absent   tc_eng-hrv_test.txt (not published for this language)
+cached   tc_eng-hun_dev.txt
+cached   tc_eng-hun_test.txt
+cached   tc_eng-ita_dev.txt
+cached   tc_eng-ita_test.txt
+cached   tc_eng-lit_dev.txt
+cached   tc_eng-lit_test.txt
+cached   tc_eng-lav_dev.txt
+absent   tc_eng-lav_test.txt (not published for this language)
+cached   tc_eng-mlt_dev.txt
+cached   tc_eng-mlt_test.txt
+cached   tc_eng-nld_dev.txt
+cached   tc_eng-nld_test.txt
+cached   tc_eng-pol_dev.txt
+cached   tc_eng-pol_test.txt
+cached   tc_eng-por_dev.txt
+cached   tc_eng-por_test.txt
+cached   tc_eng-ron_dev.txt
+cached   tc_eng-ron_test.txt
+absent   tc_eng-slk_dev.txt (not published for this language)
+absent   tc_eng-slk_test.txt (not published for this language)
+cached   tc_eng-slv_dev.txt
+absent   tc_eng-slv_test.txt (not published for this language)
+cached   tc_eng-swe_dev.txt
+cached   tc_eng-swe_test.txt
+cached   europarl_xml.zip
+cached   UD_Bulgarian-BTB.zip
+cached   UD_Czech-CAC.zip
+cached   UD_Danish-DDT.zip
+cached   UD_German-GSD.zip
+cached   UD_Greek-GDT.zip
+cached   UD_Greek-GUD.zip
+cached   UD_English-LinES.zip
+cached   UD_Spanish-GSD.zip
+cached   UD_Estonian-EDT.zip
+cached   UD_Finnish-TDT.zip
+cached   UD_French-GSD.zip
+cached   UD_Irish-IDT.zip
+cached   UD_Irish-TwittIrish.zip
+cached   UD_Croatian-SET.zip
+cached   UD_Hungarian-Szeged.zip
+cached   UD_Italian-ISDT.zip
+cached   UD_Lithuanian-ALKSNIS.zip
+cached   UD_Latvian-LVTB.zip
+cached   UD_Maltese-MUDT.zip
+cached   UD_Dutch-Alpino.zip
+cached   UD_Dutch-LassySmall.zip
+cached   UD_Polish-PDB.zip
+cached   UD_Portuguese-GSD.zip
+cached   UD_Romanian-RRT.zip
+cached   UD_Slovak-SNK.zip
+cached   UD_Slovenian-SSJ.zip
+cached   UD_Slovenian-SST.zip
+cached   UD_Swedish-Talbanken.zip
+Tatoeba
+  es-fr: 41,639 direct + 46,016 via English
+  parallel/Tatoeba_en-fr.tsv: 341,867 pairs
+  parallel/Tatoeba_en-es.tsv: 242,469 pairs
+  parallel/Tatoeba_es-fr.tsv: 87,620 pairs
+Europarl
+  798 sessions
+  parallel/Europarl_en-fr.tsv: 1,397,358 pairs
+  parallel/Europarl_en-es.tsv: 1,510,857 pairs
+  parallel/Europarl_es-fr.tsv: 1,374,545 pairs
+Universal Dependencies
+Tatoeba-Challenge sentences
+  mono/bg.txt:   18,698 sentences {'ud': 10969, 'tatoeba': 7729}
+  mono/cs.txt:   44,868 sentences {'ud': 24463, 'tatoeba': 20405}
+  mono/da.txt:   26,290 sentences {'ud': 5501, 'tatoeba': 20789}
+  mono/de.txt:  396,431 sentences {'europarl': 99997, 'ud': 15558, 'tatoeba': 280876}
+  mono/el.txt:   19,089 sentences {'ud': 4357, 'tatoeba': 14732}
+  mono/en.txt:  382,195 sentences {'ud': 5680, 'tatoeba': 376515}
+  mono/es.txt:  327,493 sentences {'ud': 15918, 'tatoeba': 311575}
+  mono/et.txt:   31,888 sentences {'ud': 30715, 'tatoeba': 1173}
+  mono/fi.txt:   80,887 sentences {'ud': 15002, 'tatoeba': 65885}
+  mono/fr.txt:  331,707 sentences {'ud': 16340, 'tatoeba': 315367}
+  mono/ga.txt:    7,523 sentences {'ud': 7444, 'tatoeba': 79}
+  mono/hr.txt:    9,005 sentences {'ud': 9005}
+  mono/hu.txt:  100,421 sentences {'ud': 1798, 'tatoeba': 98623}
+  mono/it.txt:  562,145 sentences {'europarl': 99909, 'ud': 14033, 'tatoeba': 448203}
+  mono/lt.txt:    8,655 sentences {'ud': 3049, 'tatoeba': 5606}
+  mono/lv.txt:   19,608 sentences {'ud': 19423, 'tatoeba': 185}
+  mono/mt.txt:    2,068 sentences {'ud': 2019, 'tatoeba': 49}
+  mono/nl.txt:  191,700 sentences {'europarl': 100000, 'ud': 30292, 'tatoeba': 61408}
+  mono/pl.txt:   66,384 sentences {'ud': 22062, 'tatoeba': 44322}
+  mono/pt.txt:  314,328 sentences {'europarl': 99971, 'ud': 12019, 'tatoeba': 202338}
+  mono/ro.txt:   19,904 sentences {'ud': 9522, 'tatoeba': 10382}
+  mono/sk.txt:   48,040 sentences {'ud': 48040}
+  mono/sl.txt:   20,622 sentences {'ud': 18875, 'tatoeba': 1747}
+  mono/sv.txt:   22,283 sentences {'ud': 6012, 'tatoeba': 16271}
+done

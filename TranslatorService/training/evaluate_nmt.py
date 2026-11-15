@@ -1,7 +1,7 @@
 """Step 5: score the exported translation model on the held-out test set.
 
-Reports BLEU and chrF per direction, separately for short everyday sentences (Tatoeba), news
-text (News-Commentary) and the hand-written car-service / greeting set (Domain,
+Reports BLEU and chrF per direction, separately for short everyday sentences (Tatoeba), formal
+parliament text (Europarl) and the hand-written car-service / greeting set (Domain,
 training/domain_test.tsv). Test sentences were excluded from training by prepare_data.py.
 
 Usage:  python training/evaluate_nmt.py [--beam 4] [--per-direction 500] [--corpus Domain]
@@ -29,7 +29,7 @@ def main() -> None:
     p.add_argument("--beam", type=int, default=4)
     p.add_argument("--per-direction", type=int, default=500, help="max sentences per direction+corpus")
     p.add_argument("--examples", type=int, default=3, help="example translations to print per direction")
-    p.add_argument("--corpus", default="", help="only this corpus (Tatoeba, NewsCommentary, Domain)")
+    p.add_argument("--corpus", default="", help="only this corpus (Tatoeba, Europarl, Domain)")
     args = p.parse_args()
 
     groups: dict[tuple[str, str, str], list[tuple[str, str]]] = defaultdict(list)

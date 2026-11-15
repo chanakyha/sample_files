@@ -43,7 +43,7 @@ LOG = ROOT / "logs" / "train_nmt.log"
 STOP_FILE = ROOT / "STOP"
 LANGS = ["en", "es", "fr"]
 DIRECTIONS = [(s, t) for s in LANGS for t in LANGS if s != t]
-CORPORA = ["Tatoeba", "NewsCommentary", "Europarl", "Domain", "Names"]  # same order as prepare_data.py
+CORPORA = ["Tatoeba", "Europarl", "Domain", "Names"]  # same order as prepare_data.py
 
 
 def log(msg: str) -> None:
@@ -188,7 +188,7 @@ def main() -> None:
     p.add_argument("--max-tokens", type=int, default=6000, help="tokens per micro-batch")
     p.add_argument("--accum", type=int, default=1, help="micro-batches per optimizer step")
     p.add_argument("--device", default="auto", help="auto, cpu or cuda")
-    p.add_argument("--mix", default="", help='corpus weights, e.g. "Tatoeba=3,NewsCommentary=1,Europarl=0.3"')
+    p.add_argument("--mix", default="", help='corpus weights, e.g. "Tatoeba=3,Europarl=0.3"')
     p.add_argument("--new-epoch", action="store_true",
                    help="with --resume: start a fresh epoch (use after changing --mix or the data)")
     p.add_argument("--reset-best", action="store_true",
