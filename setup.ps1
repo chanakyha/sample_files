@@ -34,7 +34,7 @@ param(
     [string]$Proxy = "",
     # Log in to the proxy with your Windows account (for proxies that use Windows sign-in)
     [switch]$ProxyUseDefaultCredentials,
-    # Also install the packages for the training scripts (sacrebleu, truststore)
+    # Also install the packages for the training scripts (sacrebleu, requests)
     [switch]$Training,
     # Also create .venv-gpu with PyTorch for NVIDIA GPUs (CUDA 12.6), for training only
     [switch]$Gpu,
@@ -202,11 +202,11 @@ function Install-GpuEnv {
     $pipArgs = @()
     if ($Proxy) { $pipArgs = @("--proxy", $Proxy) }
     if ($Wheels) {
-        Run $gpuPython (@("-m", "pip", "install", "--disable-pip-version-check", "--no-index", "--find-links", $Wheels, "torch", "sentencepiece", "numpy", "sacrebleu", "truststore")) "installing GPU packages from the wheel folder"
+        Run $gpuPython (@("-m", "pip", "install", "--disable-pip-version-check", "--no-index", "--find-links", $Wheels, "torch", "sentencepiece", "numpy", "sacrebleu", "requests")) "installing GPU packages from the wheel folder"
     } else {
         Info "Installing PyTorch with CUDA 12.6 (about 2.5 GB download)"
         Run $gpuPython (@("-m", "pip", "install", "--disable-pip-version-check", "torch", "--index-url", $TorchCudaIndex) + $pipArgs) "installing CUDA PyTorch"
-        Run $gpuPython (@("-m", "pip", "install", "--disable-pip-version-check", "sentencepiece", "numpy", "sacrebleu", "truststore") + $pipArgs) "installing training packages"
+        Run $gpuPython (@("-m", "pip", "install", "--disable-pip-version-check", "sentencepiece", "numpy", "sacrebleu", "requests") + $pipArgs) "installing training packages"
     }
     $out = & $gpuPython -c "import torch; print(torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'none')"
     if ($out -eq "none") { Warn "PyTorch cannot see a CUDA GPU (no NVIDIA GPU or driver). Training will use the CPU." }

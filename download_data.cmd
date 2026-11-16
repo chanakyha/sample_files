@@ -22,12 +22,10 @@ if not exist "%PY%" (
     echo The Python environment is missing. Run setup.cmd first.
     exit /b 1
 )
-"%PY%" -c "import truststore" 2>nul
+"%PY%" -c "import requests" 2>nul
 if errorlevel 1 (
-    echo Note: truststore is not installed, so HTTPS certificates are checked without the
-    echo Windows certificate store. Behind a proxy that inspects HTTPS this can fail; then run
-    echo   setup.cmd --training
-    echo.
+    echo The requests package is missing. Run: setup.cmd --training
+    exit /b 1
 )
 
 echo Downloading the training data from GitHub into TranslatorService\training\data\raw\

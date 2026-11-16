@@ -29,6 +29,9 @@ Output (training/data/raw/):
 Usage:  python training/download_data.py            (download + convert)
         python training/download_data.py --list     (print every URL and exit)
         python training/download_data.py --proxy http://proxy.corp:8080   (through a proxy)
+
+Downloads use requests with the proxy for http and https, verify=False (no certificate check,
+so corporate HTTPS inspection does not break them) and timeout=30 seconds per connect / read.
 """
 
 from __future__ import annotations
@@ -39,19 +42,16 @@ import random
 import re
 import sys
 import time
-import urllib.request
 import xml.etree.ElementTree as ET
 import zipfile
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-try:  # verify HTTPS with the Windows certificate store (needed behind TLS-inspecting proxies)
-    import truststore
+import requests
+import urllib3
 
-    truststore.inject_into_ssl()
-except ImportError:
-    pass
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)  # because of verify=False
 
 ROOT = Path(__file__).resolve().parent
 RAW = ROOT / "data" / "raw"
@@ -128,6 +128,9 @@ def all_downloads() -> dict[str, str]:
 # ---------------------------------------------------------------- download
 
 OPTIONAL = re.compile(r"^tc_.*_(dev|test)\.txt$")  # not every language has both files
+HEADERS = {"User-Agent": "translator-training/2.0"}
+TIMEOUT = 30  # seconds to connect and between received data
+proxies = None  # {"http": url, "https": url} from --proxy; None = HTTPS_PROXY / HTTP_PROXY
 
 
 def fetch(name: str, url: str, attempts: int = 3) -> str:
@@ -138,18 +141,18 @@ def fetch(name: str, url: str, attempts: int = 3) -> str:
     tmp = dest.with_suffix(dest.suffix + ".part")
     for attempt in range(1, attempts + 1):
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "translator-training/2.0"})
-            with urllib.request.urlopen(req, timeout=300) as resp, open(tmp, "wb") as f:
-                while chunk := resp.read(1 << 20):
-                    f.write(chunk)
+            with requests.get(url, headers=HEADERS, proxies=proxies, verify=False,
+                              timeout=TIMEOUT, stream=True) as resp:
+                if resp.status_code == 404 and OPTIONAL.match(name):
+                    return f"absent   {name} (not published for this language)"
+                resp.raise_for_status()
+                with open(tmp, "wb") as f:
+                    for chunk in resp.iter_content(1 << 20):
+                        f.write(chunk)
             if name.endswith(".zip"):
                 zipfile.ZipFile(tmp).testzip()
             tmp.replace(dest)
             return f"{dest.stat().st_size / 1e6:7.1f} MB {name}"
-        except urllib.error.HTTPError as e:
-            if e.code == 404 and OPTIONAL.match(name):
-                return f"absent   {name} (not published for this language)"
-            err = e
         except Exception as e:  # network error, truncated zip
             err = e
         time.sleep(3 * attempt)
@@ -393,9 +396,9 @@ def main() -> None:
                         "http://user:password@proxy.corp:8080 (default: HTTPS_PROXY / HTTP_PROXY)")
     args = p.parse_args()
     if args.proxy:
+        global proxies
         proxy = args.proxy if "://" in args.proxy else "http://" + args.proxy
-        urllib.request.install_opener(
-            urllib.request.build_opener(urllib.request.ProxyHandler({"http": proxy, "https": proxy})))
+        proxies = {"http": proxy, "https": proxy}
         print(f"proxy: {re.sub(r'//[^/@]*@', '//***@', proxy)}", flush=True)
     files = all_downloads()
     if args.list:

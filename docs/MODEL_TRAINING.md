@@ -21,13 +21,14 @@ All paths below are relative to `TranslatorService/`. To install and run the API
 cd TranslatorService
 python -m venv .venv
 .venv\Scripts\activate
-pip install -r requirements-train.txt      # runtime packages + sacrebleu + truststore
+pip install -r requirements-train.txt      # runtime packages + sacrebleu + requests
 ```
 
 [requirements-train.txt](../TranslatorService/requirements-train.txt) adds:
 * `sacrebleu` (2.6.0), which computes BLEU/chrF scores;
-* `truststore`, which checks HTTPS downloads against the Windows certificate store (needed
-  behind corporate proxies that inspect HTTPS).
+* `requests`, which `download_data.py` uses for the downloads: through the `--proxy` (for
+  http and https), with `verify=False`, so corporate HTTPS inspection does not cause
+  certificate errors, and `timeout=30` seconds.
 
 `pip` itself needs access to pypi.org. If pypi.org is blocked, install the packages from wheel
 files copied from another machine (see the offline section of
@@ -467,7 +468,7 @@ parliament sentences are understandable but contain errors. Results are saved in
 | Training very slow on GPU | Larger `--max-tokens` may overflow the GPU memory into shared RAM; use `--benchmark 50` to compare settings |
 | Existing checkpoint gives garbage after `prepare_data.py` | The tokenizer changed. Always use `--reuse-tokenizer` when continuing an existing model. |
 | Fine-tuned model is never exported | Use `--reset-best` when the dev BLEU of the new run may be lower than the old best |
-| SSL errors in `download_data.py` | `pip install truststore` (uses the Windows certificate store) |
+| SSL errors in `download_data.py` | Certificates are not checked (`verify=False`), so this is a proxy problem: run `check_network.cmd` and pass the working proxy with `--proxy` |
 | `download_data.py` reports `FAILED` | raw.githubusercontent.com or codeload.github.com is blocked: run `check_network.cmd` from the repository root, then rerun with `--proxy http://host:port` if a proxy works. Rerun (finished files are cached), or download the printed URLs in a browser into `training/data/raw/github/` (`--list` shows every URL and file name) |
 | `absent ... (not published for this language)` | Normal: Tatoeba-Challenge has no dev or test file for some languages |
 | `train_lid.py`: `mono/<lang>.txt not found` | Run `download_data.py` first |
