@@ -31,6 +31,45 @@ dotnet --list-sdks      # must list a 10.0.x SDK
 Do not build with only the .NET 11 SDK installed: it can no longer compile .NET 5 WPF projects.
 The repository pins the .NET 10 SDK in [global.json](../global.json).
 
+### Check your network first
+
+Setup downloads packages from a few sites, and a corporate network may block some of them.
+[check_network.cmd](../check_network.cmd) in the repository root tests each site and says what
+is blocked and why:
+
+```powershell
+.\check_network.cmd                                         # direct connection
+.\check_network.cmd --proxy http://proxy.yourcompany.com:8080
+.\check_network.cmd --proxy http://user:password@proxy.yourcompany.com:8080
+```
+
+| Group | Sites | Needed for |
+|-------|-------|------------|
+| Set up and run | github.com, pypi.org, files.pythonhosted.org, api.nuget.org | `git clone`, `pip install`, first `dotnet build` |
+| Retrain the models | raw.githubusercontent.com, codeload.github.com | `training\download_data.py` |
+| Optional | download.pytorch.org, www.python.org, dotnet.microsoft.com | GPU PyTorch, Python and .NET installers |
+| Information only | opus.nlpl.eu, object.pouta.csc.fi, www.kaggle.com | Old dataset sources, no longer used |
+
+Each site is shown as `OK` or `BLOCKED` with the reason: DNS blocked, connection refused,
+timed out, refused by the proxy, proxy login needed, or certificate not trusted because of
+corporate HTTPS inspection. The script also shows the proxy configured in Windows, which is
+usually the one to pass to `--proxy`. Its exit code is the number of required sites that
+failed (0 = all fine).
+
+When a proxy works, the script prints the commands that make the setup steps use it. In
+PowerShell, set them in the same window before steps 2–4:
+
+```powershell
+$env:HTTPS_PROXY = "http://proxy.yourcompany.com:8080"
+$env:HTTP_PROXY  = "http://proxy.yourcompany.com:8080"
+```
+
+`git`, `pip`, `dotnet` and `training\download_data.py` all use these variables.
+
+If a site stays blocked even through the proxy, ask IT to allow it, or do that step on
+another network. For example, pip packages can be downloaded elsewhere (see step 3). The
+models are already in the repository, so the training sites are only needed for retraining.
+
 ## 2. Get the code
 
 ```powershell
@@ -193,7 +232,7 @@ about 1.2 GB of downloads, then hours of training, ideally on an NVIDIA GPU), fo
 | Problem | Fix |
 |---------|-----|
 | `Python environment not found` from `start_cluster.bat` | Do step 3 in `TranslatorService` |
-| `pip install` fails with connection or SSL errors | pypi.org is blocked: use the wheels method in step 3 |
+| `git clone`, `pip install` or `dotnet build` fails with connection, proxy or SSL errors | Run `.\check_network.cmd` (with `--proxy` if your company has one) to see which site is blocked; see [Check your network first](#check-your-network-first). If pypi.org stays blocked, use the wheels method in step 3 |
 | `error CS2001: ... MainWindow.g.cs could not be found` | You are building with the .NET 11 SDK; install the .NET 10 SDK and keep `global.json` |
 | `You must install .NET to run this application` | Install a .NET Desktop Runtime (5 or newer), or use the standalone build (section 8) |
 | App status stays at `Translation service not running` | Start the API (step 5); check the `--url` address and the firewall |

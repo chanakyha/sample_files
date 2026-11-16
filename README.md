@@ -19,6 +19,10 @@ Offline translation between English, Spanish and French with automatic language 
 | [docs/MODEL_TRAINING.md](docs/MODEL_TRAINING.md) | Training both models from scratch: datasets (downloaded from GitHub only), every script and reference file, settings, exact training history, scores |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Running logic: request flow, load balancer, supervisor, desktop app, logging |
 
+On a corporate network, run `.\check_network.cmd` first (add `--proxy http://host:port` if you
+use a proxy). It shows which download sites are blocked; see the
+[setup guide](docs/SETUP_GUIDE.md#check-your-network-first).
+
 Quick start (the trained models are included):
 
 ```powershell
