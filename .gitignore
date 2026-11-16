@@ -19,6 +19,9 @@ wheels/
 publish/
 TranslatorService/logs/
 
+# .NET 5 SDK installed by setup.ps1
+.dotnet/
+
 # .NET build output
 bin/
 obj/

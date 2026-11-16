@@ -28,6 +28,7 @@ Output (training/data/raw/):
 
 Usage:  python training/download_data.py            (download + convert)
         python training/download_data.py --list     (print every URL and exit)
+        python training/download_data.py --proxy http://proxy.corp:8080   (through a proxy)
 """
 
 from __future__ import annotations
@@ -387,7 +388,15 @@ def write_mono() -> None:
 def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--list", action="store_true", help="print every download URL and exit")
+    p.add_argument("--proxy", default="",
+                   help="proxy for all downloads, e.g. http://proxy.corp:8080 or "
+                        "http://user:password@proxy.corp:8080 (default: HTTPS_PROXY / HTTP_PROXY)")
     args = p.parse_args()
+    if args.proxy:
+        proxy = args.proxy if "://" in args.proxy else "http://" + args.proxy
+        urllib.request.install_opener(
+            urllib.request.build_opener(urllib.request.ProxyHandler({"http": proxy, "https": proxy})))
+        print(f"proxy: {re.sub(r'//[^/@]*@', '//***@', proxy)}", flush=True)
     files = all_downloads()
     if args.list:
         for name, url in files.items():

@@ -37,7 +37,7 @@ python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements-train.txt
 
-python training\download_data.py      # ~1.1 GB from GitHub into training/data/raw
+python training\download_data.py      # ~1.1 GB from GitHub into training/data/raw (--proxy URL)
 python training\prepare_data.py       # clean, split dev/test, train tokenizer, encode (~20 min)
 python training\train_lid.py          # language detector (~45 min)
 python training\train_nmt.py --hours 10

@@ -11,15 +11,29 @@ over HTTP. Start the API first ([PYTHON_API_SETUP.md](PYTHON_API_SETUP.md)).
 | Item | Version | Notes |
 |------|---------|-------|
 | Windows 10/11 x64 | | WPF is Windows-only |
-| .NET SDK (to build) | **.NET 10 SDK** (10.0.401 used) | Pinned in [global.json](../global.json). The .NET 11 SDK can no longer compile .NET 5 WPF projects, so do not remove the pin. https://dotnet.microsoft.com/download/dotnet/10.0 |
-| .NET runtime (to run) | .NET 5 Desktop Runtime, **or any newer** Desktop Runtime (8, 10, …) | The app is built with `RollForward=Major`: when .NET 5 is not installed it runs on the next newer one. The standalone build (section 4) needs no runtime at all. |
-| Visual Studio (optional) | 2022 or newer | Open `Translator.slnx` |
+| .NET SDK (to build) | **.NET 5 SDK 5.0.408** (the last .NET 5 release) | Pinned in [global.json](../global.json). [setup.cmd](../setup.cmd) downloads it into `.dotnet\` in the repository (no admin rights, PC-wide .NET installs untouched) |
+| .NET runtime (to run) | **.NET 5.0.17 Desktop Runtime** (included in the SDK in `.dotnet\`) | [run_desktop.cmd](../run_desktop.cmd) starts the app on it. Started directly, the exe uses any installed Desktop Runtime 5 or newer (`RollForward=Major`). The standalone build (section 4) needs no runtime at all. |
+| Visual Studio (optional) | 2019 16.8+ / 2022 | Open `Translator.slnx`; needs the .NET 5 SDK, see section 3 |
 | The Translator API | running | Default address `http://127.0.0.1:8000` |
 
 .NET 5 has been out of support since May 2022 (no security updates). The project targets it
-on request. Moving to .NET 8 or later only needs a change of `TargetFramework`.
+on request. Moving to .NET 8 or later only needs a change of `TargetFramework` and
+`global.json`.
 
-Check the installed SDKs: `dotnet --list-sdks` (must include a 10.0.x).
+### How setup installs the .NET 5 SDK
+
+`setup.cmd` (or `setup.ps1`) checks for the 5.0.408 SDK in `.dotnet\` or on the PC. If it is
+missing, it:
+
+1. downloads `dotnet-sdk-5.0.408-win-x64.zip` (about 190 MB) from
+   `https://builds.dotnet.microsoft.com/dotnet/Sdk/5.0.408/`, using `--proxy` if given;
+2. checks its SHA-512 hash against the one Microsoft publishes in
+   [releases.json](https://builds.dotnet.microsoft.com/dotnet/release-metadata/5.0/releases.json)
+   and stops if they differ;
+3. unpacks it into `.dotnet\`. The SDK contains runtime 5.0.17: Microsoft.NETCore.App,
+   Microsoft.WindowsDesktop.App and Microsoft.AspNetCore.App.
+
+To build only the app (Python part skipped): `.\setup.cmd --skippython`.
 
 ## 2. Project files
 
@@ -32,7 +46,9 @@ Check the installed SDKs: `dotnet --list-sdks` (must include a 10.0.x).
 | [TranslatorDesktop/TranslatorApi.cs](../TranslatorDesktop/TranslatorApi.cs) | HTTP client for `/health`, `/languages`, `/translate` (System.Text.Json with snake_case names) |
 | [TranslatorDesktop/TextRow.cs](../TranslatorDesktop/TextRow.cs) | One row: original text, displayed text, detected / target language, tooltip text |
 | [TranslatorDesktop/Languages.cs](../TranslatorDesktop/Languages.cs) | Names of the 24 EU languages |
-| [global.json](../global.json) | Pins the .NET 10 SDK |
+| [global.json](../global.json) | Pins the .NET 5 SDK (5.0.408) |
+| [setup.ps1](../setup.ps1) / [setup.cmd](../setup.cmd) | Installs the .NET 5 SDK into `.dotnet\` and builds the app (plus the Python setup) |
+| [run_desktop.cmd](../run_desktop.cmd) | Starts the app on the .NET 5 runtime in `.dotnet\` |
 | [Translator.slnx](../Translator.slnx) | Solution file for Visual Studio |
 
 ## 3. Build and run
@@ -40,12 +56,24 @@ Check the installed SDKs: `dotnet --list-sdks` (must include a 10.0.x).
 From the repository root:
 
 ```powershell
-dotnet build TranslatorDesktop
-TranslatorDesktop\bin\Debug\net5.0-windows\TranslatorDesktop.exe
+.\setup.cmd --skippython          # installs the .NET 5 SDK if needed, then builds
+.\run_desktop.cmd                 # starts the app on .NET 5.0.17
 ```
 
-You can also run `dotnet run --project TranslatorDesktop`, or open `Translator.slnx` in
-Visual Studio and press F5.
+To build by hand with the SDK in `.dotnet\` (PowerShell):
+
+```powershell
+$env:DOTNET_ROOT = "$PWD\.dotnet"; $env:DOTNET_MULTILEVEL_LOOKUP = "0"
+.dotnet\dotnet build TranslatorDesktop
+```
+
+`DOTNET_MULTILEVEL_LOOKUP=0` makes the SDK use only the runtimes in `.dotnet\`, not the ones
+installed on the PC. The plain `dotnet` command uses the PC's own SDKs. Unless a 5.0.408 SDK is
+installed there, it fails with "A compatible .NET SDK was not found", because global.json asks
+for 5.0.408.
+
+For Visual Studio, open `Translator.slnx` from a window where `DOTNET_ROOT` points at `.dotnet`
+and `PATH` starts with it, or install the .NET 5.0.408 SDK on the PC.
 
 ### Connecting to the API
 
@@ -61,11 +89,13 @@ works the same with both.
 ## 4. Standalone build (no .NET installation needed)
 
 ```powershell
-dotnet publish TranslatorDesktop -c Release -r win-x64 --self-contained true -o publish
+$env:DOTNET_ROOT = "$PWD\.dotnet"; $env:DOTNET_MULTILEVEL_LOOKUP = "0"
+.dotnet\dotnet publish TranslatorDesktop -c Release -r win-x64 --self-contained true -o publish
 ```
 
 `publish\TranslatorDesktop.exe` includes the .NET 5.0.17 runtime. Copy the whole `publish`
-folder (about 150 MB) to any Windows 10/11 x64 PC and run the exe.
+folder (about 150 MB, 502 files) to any Windows 10/11 x64 PC and run the exe. The first publish
+downloads the runtime packs from api.nuget.org.
 
 ## 5. Using the app
 
@@ -114,15 +144,20 @@ window). The 35 checks cover:
 * app traffic reaching both instances through the load balancer;
 * the API still running after the app closes.
 
-All 35 checks pass on the Debug build (running on .NET 8 via roll-forward) and on the
-standalone .NET 5.0.17 build.
+All 35 checks passed on the Debug build (built with the .NET 10 SDK, running on .NET 8 via
+roll-forward) and on the standalone .NET 5.0.17 build. With the .NET 5.0.408 SDK, the app
+builds with 0 warnings and runs on the .NET 5.0.17 runtime from `.dotnet\`. That runtime was
+confirmed from the loaded `coreclr.dll` and WPF assemblies.
 
 ## 8. Troubleshooting
 
 | Problem | Fix |
 |---------|-----|
-| `error CS2001: Source file '...MainWindow.g.cs' could not be found` | You are building with the .NET 11 SDK. Keep `global.json` and install the .NET 10 SDK. |
-| `You must install .NET to run this application` | Install any .NET Desktop Runtime (5 or newer), or use the standalone build (section 4) |
+| `A compatible .NET SDK was not found` | The PC-wide `dotnet` was used. Run `.\setup.cmd --skippython`, or build with `.dotnet\dotnet` (section 3) |
+| `could not download ... dotnet-sdk-5.0.408` | builds.dotnet.microsoft.com is blocked: `.\setup.cmd --proxy http://host:port`, or copy the zip into `%TEMP%` and run setup again |
+| `could not unpack the .NET SDK` | Path too long: move the repository to a short path such as `D:\Translator` |
+| `error CS2001: Source file '...MainWindow.g.cs' could not be found` | Built with the .NET 11 SDK, which cannot compile .NET 5 WPF projects. Use the .NET 5 SDK (section 3) |
+| `You must install .NET to run this application` | Start it with `run_desktop.cmd`, install any .NET Desktop Runtime (5 or newer), or use the standalone build (section 4) |
 | Status stays at "Translation service not running" | Start the API (`TranslatorService\start_cluster.bat`), check the address (`--url`), and check that the firewall allows the port |
 | Translate button disabled | Not connected yet; see the status bar |
 | Rows stay unchanged with "not supported" | The detected language (e.g. German) is not one the model translates (only en, es, fr) |

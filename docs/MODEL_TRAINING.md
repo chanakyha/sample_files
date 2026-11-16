@@ -80,6 +80,16 @@ corporate network. It contacts no other server.
 ```powershell
 python training\download_data.py           # download (cached) + convert
 python training\download_data.py --list    # print every URL and its file name in the cache
+python training\download_data.py --proxy http://proxy.corp:8080            # through a proxy
+python training\download_data.py --proxy http://user:password@proxy.corp:8080
+```
+
+From the repository root, [download_data.cmd](../download_data.cmd) runs the same script with
+the right Python environment and passes the options on:
+
+```powershell
+.\download_data.cmd
+.\download_data.cmd --proxy http://proxy.corp:8080
 ```
 
 #### Sources
@@ -458,7 +468,7 @@ parliament sentences are understandable but contain errors. Results are saved in
 | Existing checkpoint gives garbage after `prepare_data.py` | The tokenizer changed. Always use `--reuse-tokenizer` when continuing an existing model. |
 | Fine-tuned model is never exported | Use `--reset-best` when the dev BLEU of the new run may be lower than the old best |
 | SSL errors in `download_data.py` | `pip install truststore` (uses the Windows certificate store) |
-| `download_data.py` reports `FAILED` | The proxy blocks raw.githubusercontent.com or codeload.github.com. Rerun (finished files are cached), or download the printed URLs in a browser into `training/data/raw/github/` (`--list` shows every URL and file name) |
+| `download_data.py` reports `FAILED` | raw.githubusercontent.com or codeload.github.com is blocked: run `check_network.cmd` from the repository root, then rerun with `--proxy http://host:port` if a proxy works. Rerun (finished files are cached), or download the printed URLs in a browser into `training/data/raw/github/` (`--list` shows every URL and file name) |
 | `absent ... (not published for this language)` | Normal: Tatoeba-Challenge has no dev or test file for some languages |
 | `train_lid.py`: `mono/<lang>.txt not found` | Run `download_data.py` first |
 | Starting a new run exports a weak model over the shipped one | `train_nmt.py` exports whenever dev BLEU improves, so the first evaluation of a new run replaces `models/nmt-en-es-fr/`. Copy the folder first if you want to keep it. |

@@ -19,25 +19,25 @@ Offline translation between English, Spanish and French with automatic language 
 | [docs/MODEL_TRAINING.md](docs/MODEL_TRAINING.md) | Training both models from scratch: datasets (downloaded from GitHub only), every script and reference file, settings, exact training history, scores |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Running logic: request flow, load balancer, supervisor, desktop app, logging |
 
-On a corporate network, run `.\check_network.cmd` first (add `--proxy http://host:port` if you
-use a proxy). It shows which download sites are blocked; see the
-[setup guide](docs/SETUP_GUIDE.md#check-your-network-first).
-
-Quick start (the trained models are included):
+Quick start. You need Git and Python 3.11+; setup downloads the .NET 5 SDK itself, and the
+trained models are included:
 
 ```powershell
-cd TranslatorService
-python -m venv .venv
-.venv\Scripts\pip install -r requirements.txt
-start_cluster.bat 4                       # API on http://127.0.0.1:8000
+.\check_network.cmd                       # optional: which download sites are blocked
+.\setup.cmd                               # Python environment + .NET 5 SDK + app build
+TranslatorService\start_cluster.bat 4     # window 1: API on http://127.0.0.1:8000
+.\run_desktop.cmd                         # window 2: desktop app on .NET 5
 ```
 
-In a second window, from the repository root (needs the .NET 10 SDK):
+Behind a corporate proxy, add `--proxy http://host:port` to `check_network.cmd`, `setup.cmd` and
+`download_data.cmd`. Step by step: [docs/SETUP_GUIDE.md](docs/SETUP_GUIDE.md).
 
-```powershell
-dotnet build TranslatorDesktop
-TranslatorDesktop\bin\Debug\net5.0-windows\TranslatorDesktop.exe
-```
+| Script | What it does |
+|--------|--------------|
+| [check_network.cmd](check_network.cmd) | Tests whether each download site is reachable or blocked, and why |
+| [setup.cmd](setup.cmd) / [setup.ps1](setup.ps1) | Creates `TranslatorService\.venv`, installs the packages, installs the .NET 5 SDK into `.dotnet\`, builds the app. Options: `--proxy`, `--training`, `--gpu`, `--wheels`, `--runtests` |
+| [run_desktop.cmd](run_desktop.cmd) | Starts the desktop app on the .NET 5.0.17 runtime |
+| [download_data.cmd](download_data.cmd) | Downloads the training data from GitHub (only for retraining); `--proxy` |
 
 ## Desktop app
 
@@ -59,7 +59,7 @@ when the API is started or restarted. Closing the app does not stop the API.
 
 ### 1. Run the API
 
-Set up `TranslatorService` once (virtual environment + model, see its README), then:
+Set up once with `.\setup.cmd`, then:
 
 ```powershell
 TranslatorService\start_cluster.bat 4      # 4 instances behind a load balancer on :8000
@@ -74,22 +74,24 @@ Set `TRANSLATOR_HOST=0.0.0.0` before starting it to accept connections from othe
 
 ### 2. Run the desktop app
 
-Targets **.NET 5** (`net5.0-windows`). Build with the .NET 10 SDK, pinned in
-[global.json](global.json) (the .NET 11 SDK no longer compiles .NET 5 WPF projects):
+Targets **.NET 5** (`net5.0-windows`) and is built with the **.NET 5 SDK 5.0.408**, pinned in
+[global.json](global.json). `setup.cmd` installs that SDK, with its 5.0.17 runtime, into
+`.dotnet\` and builds the app:
 
 ```powershell
-dotnet build TranslatorDesktop
-TranslatorDesktop\bin\Debug\net5.0-windows\TranslatorDesktop.exe
-TranslatorDesktop\bin\Debug\net5.0-windows\TranslatorDesktop.exe --url http://server:8000
+.\run_desktop.cmd                              # runs on the .NET 5.0.17 runtime in .dotnet\
+.\run_desktop.cmd --url http://server:8000
 ```
 
-It runs on the .NET 5 Desktop Runtime, or on a newer one if .NET 5 is not installed
-(`RollForward=Major`). .NET 5 itself is out of support since May 2022.
+Started directly (`TranslatorDesktop\bin\Debug\net5.0-windows\TranslatorDesktop.exe`), it runs
+on the PC's .NET Desktop Runtime 5 or newer (`RollForward=Major`). .NET 5 itself is out of
+support since May 2022.
 
 ### Build a standalone .exe (includes the .NET 5 runtime, nothing to install)
 
 ```powershell
-dotnet publish TranslatorDesktop -c Release -r win-x64 --self-contained true -o publish
+$env:DOTNET_ROOT = "$PWD\.dotnet"; $env:DOTNET_MULTILEVEL_LOOKUP = "0"
+.dotnet\dotnet publish TranslatorDesktop -c Release -r win-x64 --self-contained true -o publish
 ```
 
 `publish\TranslatorDesktop.exe` can be copied to any Windows 10/11 x64 PC (about 150 MB folder).

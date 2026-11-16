@@ -1,41 +1,46 @@
 # Setup and run guide
 
 This guide takes you from an empty Windows PC to a working translator: the Python API running
-and the desktop app connected to it. It takes about 15 minutes, most of it downloading Python
-packages. Translation and language detection run fully offline after setup.
+and the desktop app (.NET 5) connected to it. One script, `setup.cmd`, does the whole setup in
+about 10–15 minutes, mostly downloading. Translation and language detection run fully offline
+afterwards.
 
 For more detail on each part, see [PYTHON_API_SETUP.md](PYTHON_API_SETUP.md) (API),
 [DOTNET_APP_SETUP.md](DOTNET_APP_SETUP.md) (desktop app) and
 [MODEL_TRAINING.md](MODEL_TRAINING.md) (retraining the models).
 
+| Script (repository root) | What it does |
+|--------------------------|--------------|
+| [check_network.cmd](../check_network.cmd) | Tests whether the download sites are reachable or blocked |
+| [setup.cmd](../setup.cmd) / [setup.ps1](../setup.ps1) | Sets up the Python environment, installs the .NET 5 SDK, builds the desktop app |
+| [run_desktop.cmd](../run_desktop.cmd) | Starts the desktop app on the .NET 5 runtime |
+| [download_data.cmd](../download_data.cmd) | Downloads the training data (only for retraining) |
+| `TranslatorService\start_cluster.bat` | Starts the API |
+
+All scripts that download something accept `--proxy http://host:port`.
+
 ---
 
 ## 1. What you need
 
-| Item | Version | Where to get it |
-|------|---------|-----------------|
-| Windows 10 or 11, 64-bit | | 4 CPU cores and 8 GB RAM recommended |
+| Item | Version | Notes |
+|------|---------|-------|
+| Windows 10 or 11, 64-bit | | 4 CPU cores and 8 GB RAM recommended; no GPU needed |
 | Git | any | https://git-scm.com/download/win |
-| Python | 3.11 or newer (3.14.7 tested) | https://www.python.org/downloads/ (tick **Add python.exe to PATH** during install) |
-| .NET SDK | **10.0.x** | https://dotnet.microsoft.com/download/dotnet/10.0 (only needed to build the desktop app) |
-| Disk space | about 2 GB | Python packages ~1.3 GB, models 86 MB, app build ~150 MB |
+| Python | 3.11 or newer (3.14.7 tested) | https://www.python.org/downloads/; tick **Add python.exe to PATH** during install |
+| Disk space | about 2.5 GB | Python packages ~1.3 GB, .NET 5 SDK ~500 MB, models 86 MB |
 
-No GPU is needed. Check the tools from a new PowerShell window:
+You do **not** need to install .NET yourself. The desktop app targets .NET 5, and `setup.cmd`
+downloads the .NET 5 SDK (5.0.408, the last .NET 5 release, with runtime 5.0.17) into the
+repository's `.dotnet\` folder. No administrator rights are needed, and .NET versions already
+installed on the PC are not changed or used.
 
-```powershell
-git --version
-python --version        # 3.11 or newer
-dotnet --list-sdks      # must list a 10.0.x SDK
-```
+.NET 5 has been out of support from Microsoft since May 2022, so it gets no security updates.
 
-Do not build with only the .NET 11 SDK installed: it can no longer compile .NET 5 WPF projects.
-The repository pins the .NET 10 SDK in [global.json](../global.json).
+## 2. Check your network
 
-### Check your network first
-
-Setup downloads packages from a few sites, and a corporate network may block some of them.
-[check_network.cmd](../check_network.cmd) in the repository root tests each site and says what
-is blocked and why:
+A corporate network may block some download sites. Run the check from the repository root
+(after step 3; or download just `check_network.cmd` first):
 
 ```powershell
 .\check_network.cmd                                         # direct connection
@@ -45,81 +50,85 @@ is blocked and why:
 
 | Group | Sites | Needed for |
 |-------|-------|------------|
-| Set up and run | github.com, pypi.org, files.pythonhosted.org, api.nuget.org | `git clone`, `pip install`, first `dotnet build` |
-| Retrain the models | raw.githubusercontent.com, codeload.github.com | `training\download_data.py` |
-| Optional | download.pytorch.org, www.python.org, dotnet.microsoft.com | GPU PyTorch, Python and .NET installers |
-| Information only | opus.nlpl.eu, object.pouta.csc.fi, www.kaggle.com | Old dataset sources, no longer used |
+| Set up and run | github.com, pypi.org, files.pythonhosted.org, builds.dotnet.microsoft.com | `git clone`, Python packages, .NET 5 SDK |
+| Retrain the models | raw.githubusercontent.com, codeload.github.com | `download_data.cmd` |
+| Optional | api.nuget.org, download.pytorch.org, www.python.org, dotnet.microsoft.com | standalone app build, GPU PyTorch, installers |
+| Information only | opus.nlpl.eu, object.pouta.csc.fi, www.kaggle.com | old dataset sources, no longer used |
 
 Each site is shown as `OK` or `BLOCKED` with the reason: DNS blocked, connection refused,
-timed out, refused by the proxy, proxy login needed, or certificate not trusted because of
-corporate HTTPS inspection. The script also shows the proxy configured in Windows, which is
+timed out, refused by the proxy, proxy login needed, or certificate not trusted because the
+network inspects HTTPS. The script also shows the proxy configured in Windows, which is
 usually the one to pass to `--proxy`. Its exit code is the number of required sites that
 failed (0 = all fine).
 
-When a proxy works, the script prints the commands that make the setup steps use it. In
-PowerShell, set them in the same window before steps 2–4:
+If a site stays blocked even through the proxy, ask IT to allow it, or do that step on another
+network. Python packages can also be installed from a folder of downloaded files (step 4).
 
-```powershell
-$env:HTTPS_PROXY = "http://proxy.yourcompany.com:8080"
-$env:HTTP_PROXY  = "http://proxy.yourcompany.com:8080"
-```
-
-`git`, `pip`, `dotnet` and `training\download_data.py` all use these variables.
-
-If a site stays blocked even through the proxy, ask IT to allow it, or do that step on
-another network. For example, pip packages can be downloaded elsewhere (see step 3). The
-models are already in the repository, so the training sites are only needed for retraining.
-
-## 2. Get the code
+## 3. Get the code
 
 ```powershell
 git clone https://github.com/chanakyha/sample_files.git Translator
 cd Translator
 ```
 
-The trained models are part of the repository (`TranslatorService/models/`), so there is
-nothing else to download.
+Behind a proxy, set it for git first:
+`git config --global http.proxy http://proxy.yourcompany.com:8080`.
 
-## 3. Set up the API (once)
+The trained models are part of the repository (`TranslatorService\models\`).
 
-```powershell
-cd TranslatorService
-python -m venv .venv
-.venv\Scripts\python -m pip install --upgrade pip
-.venv\Scripts\pip install -r requirements.txt
-cd ..
-```
+Keep the folder path short (for example `D:\Translator`). The .NET SDK contains deeply nested
+files, and paths longer than about 90 characters before `.dotnet\` can hit the Windows
+260-character path limit.
 
-This installs FastAPI, Uvicorn, PyTorch (CPU build), SentencePiece, NumPy, httpx and pytest into
-`TranslatorService\.venv`.
+## 4. Run the setup
 
-**If pypi.org is blocked on your network**, download the packages on a machine with internet
-access, copy the `wheels` folder over, and install from it:
+From the repository root, in cmd or PowerShell:
 
 ```powershell
-# on the machine with internet, in TranslatorService
-pip download -r requirements.txt -d wheels
-# on the target machine, in TranslatorService
-python -m venv .venv
-.venv\Scripts\pip install --no-index --find-links wheels -r requirements.txt
+.\setup.cmd
+.\setup.cmd --proxy http://proxy.yourcompany.com:8080        # behind a proxy
 ```
 
-Both machines need the same Python version.
+What it does:
 
-## 4. Build the desktop app (once)
+1. **Python**: finds Python 3.11+, creates `TranslatorService\.venv`, installs
+   [requirements.txt](../TranslatorService/requirements.txt) (FastAPI, Uvicorn, PyTorch CPU,
+   SentencePiece, NumPy, httpx, pytest) and checks that the packages import. It also warns if a
+   model file is missing.
+2. **.NET 5**: downloads the .NET 5.0.408 SDK from Microsoft (about 190 MB), checks it against
+   Microsoft's published SHA-512 hash, unpacks it into `.dotnet\`, and builds
+   `TranslatorDesktop` with it. [global.json](../global.json) pins this SDK version.
 
-From the repository root:
+It ends with `Setup finished.` Running it again is safe: finished steps are skipped.
+
+| Option | Meaning |
+|--------|---------|
+| `--proxy URL` | Proxy for all downloads (pip, .NET SDK); `http://user:password@host:port` for a proxy login |
+| `--proxyusedefaultcredentials` | Sign in to the proxy with your Windows account (for the .NET SDK download) |
+| `--training` | Also install the training packages ([requirements-train.txt](../TranslatorService/requirements-train.txt)) |
+| `--gpu` | Also create `TranslatorService\.venv-gpu` with PyTorch for NVIDIA GPUs (CUDA 12.6, ~2.5 GB) |
+| `--wheels FOLDER` | Install Python packages from a folder of wheel files, without pypi.org |
+| `--runtests` | Run the Python tests (38) at the end |
+| `--recreate` | Delete and recreate `TranslatorService\.venv` |
+| `--skippython`, `--skipdotnet` | Skip that part |
+
+In PowerShell you can also call `.\setup.ps1 -Proxy http://... -Training` directly;
+`Get-Help .\setup.ps1 -Detailed` shows the same help.
+
+**If pypi.org is blocked**, download the packages on a PC with internet access and the same
+Python version, copy the folder over, and install from it:
 
 ```powershell
-dotnet build TranslatorDesktop
+# on the PC with internet, in TranslatorService
+python -m pip download -r requirements.txt -d D:\wheels
+# on the target PC, in the repository root
+.\setup.cmd --wheels D:\wheels
 ```
 
-Expected ending: `Build succeeded. 0 Warning(s) 0 Error(s)`. The app is written to
-`TranslatorDesktop\bin\Debug\net5.0-windows\TranslatorDesktop.exe`.
-
-To run it, the PC needs a .NET Desktop Runtime, version 5 or newer (the app rolls forward to
-newer versions). To make a copy that runs on PCs without .NET, see
-[section 8](#8-standalone-desktop-app-for-other-pcs).
+**If builds.dotnet.microsoft.com is blocked**, copy
+`dotnet-sdk-5.0.408-win-x64.zip` from another PC into your `%TEMP%` folder and run setup
+again. It uses that file once its SHA-512 hash matches. You can download the file from
+https://builds.dotnet.microsoft.com/dotnet/Sdk/5.0.408/dotnet-sdk-5.0.408-win-x64.zip.
 
 ## 5. Run
 
@@ -138,8 +147,12 @@ API. For a single instance instead of a cluster, run `TranslatorService\start_ap
 **Window 2: the desktop app:**
 
 ```powershell
-TranslatorDesktop\bin\Debug\net5.0-windows\TranslatorDesktop.exe
+.\run_desktop.cmd
 ```
+
+`run_desktop.cmd` starts `TranslatorDesktop\bin\Debug\net5.0-windows\TranslatorDesktop.exe` on
+the .NET 5.0.17 runtime in `.dotnet\`. Starting the exe directly also works if a .NET Desktop
+Runtime 5 or newer is installed on the PC; it then runs on that one.
 
 The status bar shows `Ready · offline · CPU · …` once it is connected. If the API is not running
 yet, it shows `Translation service not running` and connects by itself when the API starts.
@@ -197,48 +210,61 @@ TranslatorService\start_cluster.bat 4
 On the other PC, point the app at that machine:
 
 ```powershell
-TranslatorDesktop.exe --url http://<api-pc-name>:8000
+.\run_desktop.cmd --url http://<api-pc-name>:8000
 ```
 
 Setting the environment variable `TRANSLATOR_URL` instead of `--url` also works.
 
 ## 8. Standalone desktop app for other PCs
 
-This build includes the .NET 5 runtime, so the target PC needs nothing installed:
+This build includes the .NET 5.0.17 runtime, so the target PC needs nothing installed. After
+setup, from the repository root (needs api.nuget.org the first time, for the runtime packs):
 
 ```powershell
-dotnet publish TranslatorDesktop -c Release -r win-x64 --self-contained true -o publish
+$env:DOTNET_ROOT = "$PWD\.dotnet"; $env:DOTNET_MULTILEVEL_LOOKUP = "0"
+.dotnet\dotnet publish TranslatorDesktop -c Release -r win-x64 --self-contained true -o publish
 ```
 
 Copy the whole `publish` folder (about 150 MB) and run `publish\TranslatorDesktop.exe`.
 
 ## 9. Retraining the models (optional)
 
-The shipped models are ready to use. To retrain them (all data is downloaded from GitHub only;
-about 1.2 GB of downloads, then hours of training, ideally on an NVIDIA GPU), follow
-[MODEL_TRAINING.md](MODEL_TRAINING.md). The short version, from `TranslatorService`:
+The shipped models are ready to use. Retraining downloads about 1.1 GB of data from GitHub and
+then trains for hours, ideally on an NVIDIA GPU. Full instructions are in
+[MODEL_TRAINING.md](MODEL_TRAINING.md). The short version:
 
 ```powershell
-.venv\Scripts\pip install -r requirements-train.txt
-.venv\Scripts\python training\download_data.py
+.\setup.cmd --training                        # add --gpu for an NVIDIA GPU
+.\download_data.cmd                           # or: .\download_data.cmd --proxy http://host:port
+cd TranslatorService
 .venv\Scripts\python training\prepare_data.py
 .venv\Scripts\python training\train_lid.py
 .venv\Scripts\python training\train_nmt.py --hours 10
 .venv\Scripts\python training\evaluate_nmt.py
 ```
 
+`download_data.cmd` downloads into `TranslatorService\training\data\raw\` and converts the
+files (about 10 minutes in total on a fast connection). Files already downloaded are kept, so
+if it fails halfway, run it again and it continues. `download_data.cmd --list` prints every
+download address, for example to ask IT to allow them.
+
 ## 10. Troubleshooting
 
 | Problem | Fix |
 |---------|-----|
-| `Python environment not found` from `start_cluster.bat` | Do step 3 in `TranslatorService` |
-| `git clone`, `pip install` or `dotnet build` fails with connection, proxy or SSL errors | Run `.\check_network.cmd` (with `--proxy` if your company has one) to see which site is blocked; see [Check your network first](#check-your-network-first). If pypi.org stays blocked, use the wheels method in step 3 |
-| `error CS2001: ... MainWindow.g.cs could not be found` | You are building with the .NET 11 SDK; install the .NET 10 SDK and keep `global.json` |
-| `You must install .NET to run this application` | Install a .NET Desktop Runtime (5 or newer), or use the standalone build (section 8) |
+| `Python 3.11 or newer was not found` | Install Python (tick **Add python.exe to PATH**), open a new window, run setup again |
+| `SETUP FAILED: installing requirements.txt` | pypi.org blocked: run `.\check_network.cmd`, then `.\setup.cmd --proxy ...` or `--wheels` (step 4) |
+| `could not download ... dotnet-sdk-5.0.408` | builds.dotnet.microsoft.com blocked: use `--proxy`, or copy the zip into `%TEMP%` (step 4) |
+| `does not match Microsoft's published SHA-512 hash` | The download was damaged or replaced by a proxy; it is deleted, run setup again |
+| `could not unpack the .NET SDK` | The repository path is too long; move it to a short path such as `D:\Translator` |
+| `the desktop app is running from the build folder` | Close the app, run setup again |
+| `A compatible .NET SDK was not found` | You ran the PC-wide `dotnet build`, which has no 5.0.408 SDK. Use `setup.cmd`, or `.dotnet\dotnet build TranslatorDesktop` |
+| `Python environment not found` from `start_cluster.bat` | Run `.\setup.cmd` |
 | App status stays at `Translation service not running` | Start the API (step 5); check the `--url` address and the firewall |
-| Port 8000 already in use | `TranslatorService\.venv\Scripts\python TranslatorService\cluster.py --instances 4 --port 8080`, then start the app with `--url http://127.0.0.1:8080` |
+| Port 8000 already in use | `TranslatorService\.venv\Scripts\python TranslatorService\cluster.py --instances 4 --port 8080`, then `.\run_desktop.cmd --url http://127.0.0.1:8080` |
 | `/health` shows `model_missing` | `TranslatorService\models\nmt-en-es-fr\` or `models\lid\` is missing; get them again from git |
 | A row says "not supported" | It was detected as a language other than English, Spanish or French; only those three are translated |
+| `DOWNLOAD FAILED` from `download_data.cmd` | Run it again (it continues); if a site is blocked, use `--proxy` or see `.\check_network.cmd` |
 | Slow with many users | Start more instances (`start_cluster.bat 6`), or set `TRANSLATOR_BEAM_SIZE=1` (about twice as fast, slightly worse quality) |
 
 Logs are in `TranslatorService\logs\` (one JSON line per request; the translated text itself is

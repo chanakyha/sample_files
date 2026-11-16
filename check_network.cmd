@@ -65,16 +65,17 @@ echo Needed to set up and run
 call :check req "github.com" "https://github.com/" "git clone and push"
 call :check req "pypi.org" "https://pypi.org/simple/fastapi/" "pip install: package index"
 call :check req "files.pythonhosted.org" "https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl" "pip install: package downloads"
-call :check req "api.nuget.org" "https://api.nuget.org/v3/index.json" "dotnet build: .NET 5 packs, first build only"
+call :check req "builds.dotnet.microsoft.com" "https://builds.dotnet.microsoft.com/dotnet/Sdk/5.0.408/dotnet-sdk-5.0.408-win-x64.zip" "setup: .NET 5 SDK download"
 echo.
-echo Needed to retrain the models (training\download_data.py)
+echo Needed to retrain the models (download_data.cmd)
 call :check req "raw.githubusercontent.com" "https://raw.githubusercontent.com/Helsinki-NLP/Tatoeba-Challenge/master/data/dev/eng-fra/dev.txt" "Tatoeba and treebank files"
 call :check req "codeload.github.com" "https://codeload.github.com/UDS-SFB-B6-Datasets/Multilingual-Parallel-Direct-Europarl/zip/refs/heads/main" "Europarl and treebank zip files"
 echo.
 echo Optional
+call :check opt "api.nuget.org" "https://api.nuget.org/v3/index.json" "standalone app build: .NET 5 runtime packs"
 call :check opt "download.pytorch.org" "https://download.pytorch.org/whl/cu126/torch/" "PyTorch with CUDA, GPU training only"
 call :check opt "www.python.org" "https://www.python.org/downloads/" "Python installer"
-call :check opt "dotnet.microsoft.com" "https://dotnet.microsoft.com/download/dotnet/10.0" ".NET 10 SDK installer"
+call :check opt "dotnet.microsoft.com" "https://dotnet.microsoft.com/download/dotnet/5.0" ".NET download pages"
 echo.
 echo Not used any more, shown for information
 call :check info "opus.nlpl.eu" "https://opus.nlpl.eu/" "old dataset site"
@@ -111,8 +112,9 @@ echo                 set HTTP_PROXY=%PROXY%
 echo   PowerShell:   $env:HTTPS_PROXY = "%PROXY%"
 echo                 $env:HTTP_PROXY = "%PROXY%"
 echo.
-echo pip, git, dotnet and training\download_data.py all use these variables. Alternatives:
-echo   pip install --proxy %PROXY% -r requirements.txt
+echo pip, git, dotnet and training\download_data.py all use these variables. Or pass it directly:
+echo   setup.cmd --proxy %PROXY%
+echo   download_data.cmd --proxy %PROXY%
 echo   git config --global http.proxy %PROXY%
 exit /b 0
 
