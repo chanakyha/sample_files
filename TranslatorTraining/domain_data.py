@@ -9,7 +9,7 @@ names it had never seen. This module provides:
   * name_augment(x, y, rng) -> Tatoeba pairs with "Tom"/"Mary" swapped for random unseen names
                              on both sides, which teaches the model to copy names it never saw
 
-The held-out domain test set (training/domain_test.tsv) is written separately and is
+The held-out domain test set (domain_test.tsv) is written separately and is
 excluded from training by prepare_data.py.
 """
 

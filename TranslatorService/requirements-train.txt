@@ -1,4 +1,0 @@
-# Extra packages for the training scripts in training/
--r requirements.txt
-sacrebleu>=2.4     # BLEU score for evaluating translations
-requests>=2.28     # downloads in training/download_data.py (proxy, verify=False)

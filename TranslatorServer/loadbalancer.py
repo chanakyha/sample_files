@@ -202,7 +202,7 @@ def create_app(backend_urls: list[str], health_interval: float = 2.0,
     ], lifespan=lifespan)
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
     import uvicorn
 
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -210,7 +210,7 @@ def main() -> None:
     p.add_argument("--port", type=int, default=8000)
     p.add_argument("--backends", required=True, help="comma-separated instance URLs")
     p.add_argument("--health-interval", type=float, default=2.0)
-    args = p.parse_args()
+    args = p.parse_args(argv)
     setup_logging("loadbalancer")
     app = create_app([u for u in args.backends.split(",") if u], args.health_interval)
     uvicorn.run(app, host=args.host, port=args.port, log_config=None, access_log=False)

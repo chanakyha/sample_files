@@ -17,18 +17,18 @@ raw.githubusercontent.com only (see SOURCES below). No other servers are contact
     * the non-English side of Tatoeba-Challenge eng-xx files
     * Europarl sentences for de, it, nl, pt
 
-Downloads are cached in training/data/raw/github/ and skipped when already there. If a
+Downloads are cached in data/raw/github/ and skipped when already there. If a
 network only allows the github.com website, download the same files in a browser (the URLs are
-printed by --list) into training/data/raw/github/ under the names shown, then run this script.
+printed by --list) into data/raw/github/ under the names shown, then run this script.
 
-Output (training/data/raw/):
+Output (data/raw/):
     github/...                          download cache (original files)
     parallel/<Corpus>_<a>-<b>.tsv       one sentence pair per line: <a text> TAB <b text>
     mono/<lang>.txt                     detector sentences, one per line, "<source>\t<text>"
 
-Usage:  python training/download_data.py            (download + convert)
-        python training/download_data.py --list     (print every URL and exit)
-        python training/download_data.py --proxy http://proxy.corp:8080   (through a proxy)
+Usage:  python download_data.py            (download + convert)
+        python download_data.py --list     (print every URL and exit)
+        python download_data.py --proxy http://proxy.corp:8080   (through a proxy)
 
 Downloads use requests with the proxy for http and https, verify=False (no certificate check,
 so corporate HTTPS inspection does not break them) and timeout=30 seconds per connect / read.
@@ -403,7 +403,7 @@ def main() -> None:
     files = all_downloads()
     if args.list:
         for name, url in files.items():
-            print(f"{url}\n    -> training/data/raw/github/{name}")
+            print(f"{url}\n    -> TranslatorTraining/data/raw/github/{name}")
         return
 
     with ThreadPoolExecutor(max_workers=6) as pool:

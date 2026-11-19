@@ -2,6 +2,14 @@
 
 How the parts of the EU Translator work together at runtime.
 
+> **In plain words:** the desktop app is only the window. It sends each text to the translation
+> server, which first recognises the language and then translates. For many users the server can
+> run several copies of the translator side by side, with a load balancer in front that hands each
+> request to a free copy and restarts copies that fail. A non-technical explanation with pictures
+> is in [HOW_IT_WORKS.md](HOW_IT_WORKS.md).
+
+![What happens when you use the translator](images/how_it_works.png)
+
 * Setup: [PYTHON_API_SETUP.md](PYTHON_API_SETUP.md) · [DOTNET_APP_SETUP.md](DOTNET_APP_SETUP.md)
 * Models: [MODEL_TRAINING.md](MODEL_TRAINING.md)
 
@@ -19,21 +27,29 @@ How the parts of the EU Translator work together at runtime.
                                                     │  translator  │ │  translator  │ │              │
                                                     └──────────────┘ └──────────────┘ └──────────────┘
                                                       cluster.py starts all processes and restarts crashed ones
-                                                      every process writes JSON logs to TranslatorService/logs/
+                                                      every process writes JSON logs to TranslatorServer/logs/
 ```
 
 | Component | File | Process | Role |
 |-----------|------|---------|------|
-| Desktop app | [TranslatorDesktop/](../TranslatorDesktop/) | `TranslatorDesktop.exe` | User interface; calls the API over HTTP |
-| Load balancer | [loadbalancer.py](../TranslatorService/loadbalancer.py) | 1 Python process | Single public address; spreads requests over the instances |
-| API instance | [app.py](../TranslatorService/app.py) | N Python processes | FastAPI app: validation, detection, translation, logging |
-| Supervisor | [cluster.py](../TranslatorService/cluster.py) | 1 Python process | Starts the instances and the load balancer, restarts crashed ones |
-| Language detector | [translator/detect.py](../TranslatorService/translator/detect.py), [lid.py](../TranslatorService/translator/lid.py) | inside each instance | Detects 24 languages |
-| Translator | [translator/engine.py](../TranslatorService/translator/engine.py), [nmt.py](../TranslatorService/translator/nmt.py) | inside each instance | Translates en ↔ es ↔ fr |
-| Logging | [logsetup.py](../TranslatorService/logsetup.py) | every process | JSON-lines files + console |
+| Desktop app | [TranslatorDesktop/](../TranslatorDesktop/) | `TranslatorDesktop.exe` | User interface; calls the API over HTTP. Starts `TranslatorServer.exe` in the background when no API is running ([ServerProcess.cs](../TranslatorDesktop/ServerProcess.cs)). |
+| Load balancer | [loadbalancer.py](../TranslatorServer/loadbalancer.py) | 1 Python process | Single public address; spreads requests over the instances |
+| API instance | [app.py](../TranslatorServer/app.py) | N Python processes | FastAPI app: validation, detection, translation, logging |
+| Supervisor | [cluster.py](../TranslatorServer/cluster.py) | 1 Python process | Starts the instances and the load balancer, restarts crashed ones |
+| Language detector | [translator/detect.py](../TranslatorServer/translator/detect.py), [lid.py](../TranslatorServer/translator/lid.py) | inside each instance | Detects 24 languages |
+| Translator | [translator/engine.py](../TranslatorServer/translator/engine.py), [nmt.py](../TranslatorServer/translator/nmt.py) | inside each instance | Translates en ↔ es ↔ fr |
+| Logging | [logsetup.py](../TranslatorServer/logsetup.py) | every process | JSON-lines files + console |
 
-With `start_api.bat` there is no load balancer: the client talks to one `app.py` directly on
+With `start_api.bat` (or `TranslatorServer.exe --single`) there is no load balancer: the client talks to one `app.py` directly on
 port 8000. The API is the same either way.
+
+The same code also runs as the bundled `TranslatorServer.exe` (built by `build_server_exe.cmd`):
+its entry point [server_main.py](../TranslatorServer/server_main.py) runs the supervisor by default, and
+the supervisor starts every instance (`TranslatorServer.exe worker --port 800i`) and the load
+balancer (`TranslatorServer.exe balancer …`) as further processes of the same exe.
+
+The models are trained by the separate scripts in [TranslatorTraining/](../TranslatorTraining/),
+which import the model code from `TranslatorServer/translator/` and write `TranslatorServer/models/`.
 
 ## 2. Life of a translation request
 
@@ -71,10 +87,10 @@ Example: the app translates two rows to French.
       `confidence`, `translated`.
    6. Logs one access line and one translation line (sentence count, languages, time) with the
       request id.
-4. **Desktop app**: updates each row's text, plus the tooltip ("Translated from English to
-   French / Original: …").
+4. **Desktop app**: writes each text and its translation into the result box
+   ("Spanish -> French: …").
 
-## 3. Load balancer logic ([loadbalancer.py](../TranslatorService/loadbalancer.py))
+## 3. Load balancer logic ([loadbalancer.py](../TranslatorServer/loadbalancer.py))
 
 | Mechanism | Behaviour |
 |-----------|-----------|
@@ -86,9 +102,10 @@ Example: the app translates two rows to French.
 | Headers | Hop-by-hop headers are dropped; `X-Request-ID`, `X-Forwarded-For` are added towards the instance; `X-Request-ID`, `X-Backend` are added to the response |
 | Status | `GET /lb/status`: per instance `healthy`, `active`, `requests`, `errors`, `avg_ms`, `last_error` |
 
-## 4. Supervisor logic ([cluster.py](../TranslatorService/cluster.py))
+## 4. Supervisor logic ([cluster.py](../TranslatorServer/cluster.py))
 
-1. Starts N instances: `python -m uvicorn app:app --host 127.0.0.1 --port 800i`. Each gets
+1. Starts N instances: `python -m uvicorn app:app --host 127.0.0.1 --port 800i` (in the exe:
+   `TranslatorServer.exe worker --host 127.0.0.1 --port 800i`). Each gets
    `TRANSLATOR_INSTANCE=api-800i` and `TRANSLATOR_THREADS = CPU cores / N`.
 2. Starts the load balancer with the list of instance URLs.
 3. Every second, checks whether any process has exited. If one has, it logs the crash with the
@@ -98,17 +115,19 @@ Example: the app translates two rows to French.
 Each instance is a separate process with its own copy of the models (about 500 MB of RAM), so
 translations run in parallel on different cores.
 
-## 5. Desktop app logic ([MainWindow.xaml.cs](../TranslatorDesktop/MainWindow.xaml.cs))
+## 5. Desktop app logic ([MainWindow.xaml.cs](../TranslatorDesktop/MainWindow.xaml.cs), [ServerProcess.cs](../TranslatorDesktop/ServerProcess.cs))
 
 | Part | Behaviour |
 |------|-----------|
-| Start | Reads the API URL (`--url` → `TRANSLATOR_URL` → `http://127.0.0.1:8000`), shows six sample rows, starts the connection monitor |
-| Connection monitor | Loop: `GET /health` every 2 s while down, every 5 s while up. When it comes up: `GET /languages`, builds the Translate menu, enables translation. When it goes down: disables translation and shows "not running (retrying…)". |
-| Translate | All rows are sent in one request. Each row stores its translation, detected language and target; the tooltip text is built from them. |
-| Add row | While translations are shown, the new row is translated immediately |
-| Errors | API unreachable: status bar only (the monitor reconnects). Other API errors: message box. |
+| Start | Reads the API URL (`--url` → `TRANSLATOR_URL` → `http://127.0.0.1:8000`) and calls `GET /health` |
+| Background server | If no API answers and the address is local, finds `TranslatorServer.exe` (`--server` / `TRANSLATOR_SERVER_EXE`, else `TranslatorServer\` next to the app, else `TranslatorServer\dist\TranslatorServer\` in a parent folder) and starts it hidden with `--single --port <port>` (or `--server-args`). The process is put into a Windows job object with "kill on close", so it ends with the app even if the app is killed; on a normal close the app stops it (with its child processes). A server that was already running is never stopped. |
+| Waiting | Polls `GET /health` every second (up to 3 minutes) while the models load; reports if the server process exits |
+| Connection monitor | Then `GET /health` every 5 s while up, 2 s while down; the language buttons are enabled only while the API answers |
+| Add text | Adds the text to the list and calls `POST /detect`; the list shows the language name (`[Spanish]`) |
+| English / French / Spanish | All texts in one `POST /translate` request; the result box lists per text the source language, target language and translation, or why it is unchanged |
+| Errors | API unreachable: status bar (the monitor reconnects). Other API errors: shown in the result box. |
 
-## 6. Logging ([logsetup.py](../TranslatorService/logsetup.py))
+## 6. Logging ([logsetup.py](../TranslatorServer/logsetup.py))
 
 * Each process calls `setup_logging(<name>)`. It attaches a rotating file handler (JSON
   lines, 10 MB × 5) and a console handler to the root logger and to uvicorn's loggers.
@@ -121,7 +140,7 @@ translations run in parallel on different cores.
 
 | Lever | Effect |
 |-------|--------|
-| More instances (`start_cluster.bat N`) | Higher throughput up to the number of CPU cores: 4 instances gave 2× the throughput of 1 on a 4-core laptop |
+| More instances (`start_cluster.bat N`) | Higher throughput up to the number of CPU cores: 4 instances gave 2× the throughput of 1 on a 4-core processor |
 | `TRANSLATOR_BEAM_SIZE=1` | About 2× faster decoding, slightly lower quality |
 | Cache | Repeated sentences are returned in about 0 ms |
 | Batching | One request with many sentences is more efficient than many requests with one sentence each |

@@ -19,10 +19,12 @@ import json
 import logging
 import logging.handlers
 import os
+import sys
 from datetime import datetime
 from pathlib import Path
 
-SERVICE_DIR = Path(__file__).resolve().parent
+# logs/ next to TranslatorServer.exe in the bundled build, else next to this file
+SERVICE_DIR = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parent
 _configured: set[str] = set()
 
 

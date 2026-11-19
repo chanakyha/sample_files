@@ -2,9 +2,9 @@
 
 Reports BLEU and chrF per direction, separately for short everyday sentences (Tatoeba), formal
 parliament text (Europarl) and the hand-written car-service / greeting set (Domain,
-training/domain_test.tsv). Test sentences were excluded from training by prepare_data.py.
+domain_test.tsv). Test sentences were excluded from training by prepare_data.py.
 
-Usage:  python training/evaluate_nmt.py [--beam 4] [--per-direction 500] [--corpus Domain]
+Usage:  python evaluate_nmt.py [--beam 4] [--per-direction 500] [--corpus Domain]
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ from pathlib import Path
 import sacrebleu
 
 ROOT = Path(__file__).resolve().parent
-sys.path.insert(0, str(ROOT.parent))
+sys.path.insert(0, str(ROOT.parent / "TranslatorServer"))  # model code of the API
 from translator.engine import Translator  # noqa: E402
 
 TEST = ROOT / "data" / "prepared" / "test.tsv"

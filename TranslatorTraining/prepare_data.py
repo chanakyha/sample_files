@@ -1,7 +1,7 @@
 """Step 2: clean the parallel data, split dev/test, train the tokenizer, encode to arrays.
 
-Input:  training/data/raw/parallel/<Corpus>_<a>-<b>.tsv   (from download_data.py)
-Output: training/data/prepared/
+Input:  data/raw/parallel/<Corpus>_<a>-<b>.tsv   (from download_data.py)
+Output: data/prepared/
           spm.model / spm.vocab        our SentencePiece tokenizer (trained here)
           train_{src,tgt}.bin + _off.npy  token ids (uint16) + offsets
           train_dir.npy                   direction id per example
@@ -9,7 +9,7 @@ Output: training/data/prepared/
           dev.tsv / test.tsv              held-out sentences: src_lang, tgt_lang, src, ref, corpus
                                           (test.tsv also has domain_test.tsv as corpus "Domain")
 
-Usage:  python training/prepare_data.py [--europarl-per-pair 300000] [--reuse-tokenizer]
+Usage:  python prepare_data.py [--europarl-per-pair 300000] [--reuse-tokenizer]
 """
 
 from __future__ import annotations

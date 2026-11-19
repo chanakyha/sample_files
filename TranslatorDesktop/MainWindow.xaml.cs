@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
+using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -11,315 +11,266 @@ using System.Windows.Input;
 
 namespace TranslatorDesktop
 {
+    /// <summary>One text in the list, with its detected language.</summary>
+    public sealed class TextEntry : INotifyPropertyChanged
+    {
+        private string _language = "detecting...";
+
+        public TextEntry(string text) => Text = text;
+
+        public string Text { get; }
+        public string? LangCode { get; set; }
+
+        public string Language
+        {
+            get => _language;
+            set
+            {
+                _language = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Display)));
+            }
+        }
+
+        public string Display => $"{Text}    [{_language}]";
+
+        public override string ToString() => Display; // also the name screen readers / UI tests see
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+    }
+
     /// <summary>
-    /// The desktop client. It does not start the translation service: the Python API runs as a
-    /// separate process (see TranslatorService\start_api.bat) and the app connects to it over
-    /// HTTP, reconnecting automatically whenever the service is started or restarted.
+    /// Plain window: add texts at the bottom (their language is detected), translate them all
+    /// with the English / French / Spanish buttons, read the result in the box at the bottom.
+    ///
+    /// The translation API is a separate program. If it is not already running at the API
+    /// address, the app starts TranslatorServer.exe as a hidden background process
+    /// (see <see cref="ServerProcess"/>) and stops it again when the window closes.
     /// </summary>
     public partial class MainWindow : Window
     {
-        private const string DefaultUrl = "http://127.0.0.1:8000";
-        private static readonly TimeSpan PollWhileDown = TimeSpan.FromSeconds(2);
-        private static readonly TimeSpan PollWhileUp = TimeSpan.FromSeconds(5);
-
-        private static readonly string[] SampleTexts =
-        {
-            "The car needs a new battery.",
-            "La voiture sera prête demain matin.",
-            "El motor hace un ruido extraño al arrancar.",
-            "Our dealership is closed on Monday for maintenance.",
-            "¿Dónde está la estación de tren?",
-            "Je voudrais réserver une table pour deux personnes.",
-        };
-
-        // Until the service reports its languages (GET /languages)
-        private static readonly string[] DefaultTranslationLanguages = { "en", "es", "fr" };
-        private HashSet<string> _supported = new(DefaultTranslationLanguages);
-
-        private readonly ObservableCollection<TextRow> _rows = new();
+        private readonly ObservableCollection<TextEntry> _entries = new();
         private readonly TranslatorApi _api;
+        private readonly ServerProcess _server;
         private readonly CancellationTokenSource _closing = new();
-        private readonly Dictionary<string, MenuItem> _languageItems = new();
-
-        private Language _selected = Languages.Get("en");
-        private HealthInfo? _health;
-        private bool _showingTranslation;
-        private bool _serviceReady;
+        private bool _ready;
         private bool _busy;
 
         public MainWindow()
         {
             InitializeComponent();
-            _api = new TranslatorApi(new Uri(ServiceUrl()));
-
-            foreach (var text in SampleTexts) _rows.Add(new TextRow(text));
-            RowsList.ItemsSource = _rows;
-            _rows.CollectionChanged += (_, _) => UpdateHeader();
-
-            BuildTranslateMenu(DefaultTranslationLanguages);
-            UpdateLanguageUi();
-            UpdateHeader();
-            UpdateEnabled();
+            _api = new TranslatorApi(new Uri(ResolveApiUrl()));
+            _server = new ServerProcess(_api.BaseAddress);
+            TextList.ItemsSource = _entries;
+            UpdateButtons();
+            Loaded += async (_, _) =>
+            {
+                InputBox.Focus();
+                await ConnectAsync(_closing.Token);
+            };
+            Closed += (_, _) =>
+            {
+                _closing.Cancel();
+                _server.Stop();
+                _api.Dispose();
+            };
         }
 
         /// <summary>API address: --url http://host:port on the command line, else the
         /// TRANSLATOR_URL environment variable, else http://127.0.0.1:8000.</summary>
-        private static string ServiceUrl()
+        private static string ResolveApiUrl()
         {
             var args = Environment.GetCommandLineArgs();
             for (var i = 1; i < args.Length - 1; i++)
                 if (args[i] == "--url") return args[i + 1];
             var fromEnv = Environment.GetEnvironmentVariable("TRANSLATOR_URL");
-            return string.IsNullOrWhiteSpace(fromEnv) ? DefaultUrl : fromEnv;
+            return string.IsNullOrWhiteSpace(fromEnv) ? "http://127.0.0.1:8000" : fromEnv;
         }
 
-        // ---------- Nav bar ----------
+        // ------------------------------------------------------------------ server connection
 
-        private void BuildTranslateMenu(IEnumerable<string> codes)
+        private async Task ConnectAsync(CancellationToken ct)
         {
-            _supported = new HashSet<string>(codes);
-            TranslateMenu.Items.Clear();
-            _languageItems.Clear();
-            var original = new MenuItem { Header = "Show original text" };
-            original.Click += (_, _) => ShowOriginal();
-            TranslateMenu.Items.Add(original);
-            TranslateMenu.Items.Add(new Separator());
-
-            foreach (var lang in Languages.All.Where(l => _supported.Contains(l.Code)))
-            {
-                var item = new MenuItem
-                {
-                    Header = lang.Name,
-                    InputGestureText = lang.NativeName,
-                    Tag = lang,
-                };
-                System.Windows.Automation.AutomationProperties.SetAutomationId(item, $"lang_{lang.Code}");
-                item.Click += async (_, _) => await SelectLanguageAndTranslateAsync(lang);
-                _languageItems[lang.Code] = item;
-                TranslateMenu.Items.Add(item);
-            }
-            UpdateEnabled();
-        }
-
-        private void TranslateMenu_MouseEnter(object sender, MouseEventArgs e)
-        {
-            if (TranslateMenu.IsEnabled) TranslateMenu.IsSubmenuOpen = true;
-        }
-
-        private async Task SelectLanguageAndTranslateAsync(Language lang)
-        {
-            _selected = lang;
-            UpdateLanguageUi();
-            await TranslateRowsAsync(_rows.ToList());
-        }
-
-        // ---------- Buttons / input ----------
-
-        private async void TranslateButton_Click(object sender, RoutedEventArgs e) =>
-            await TranslateRowsAsync(_rows.ToList());
-
-        private async void AddButton_Click(object sender, RoutedEventArgs e) => await AddRowFromInputAsync();
-
-        private async void InputBox_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-            {
-                e.Handled = true;
-                await AddRowFromInputAsync();
-            }
-        }
-
-        private void RemoveRow_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is FrameworkElement { Tag: TextRow row }) _rows.Remove(row);
-        }
-
-        private void ClearButton_Click(object sender, RoutedEventArgs e)
-        {
-            _rows.Clear();
-            _showingTranslation = false;
-            TimingText.Text = "";
-        }
-
-        private void ShowOriginalButton_Click(object sender, RoutedEventArgs e) => ShowOriginal();
-
-        private async Task AddRowFromInputAsync()
-        {
-            var text = InputBox.Text.Trim();
-            if (text.Length == 0) return;
-            var row = new TextRow(text);
-            _rows.Add(row);
-            InputBox.Clear();
-            InputBox.Focus();
-            RowsList.ScrollIntoView(row);
-            // While the window shows translations, translate new rows straight away.
-            if (_showingTranslation) await TranslateRowsAsync(new[] { row });
-        }
-
-        // ---------- Translation ----------
-
-        private async Task TranslateRowsAsync(IReadOnlyList<TextRow> rows)
-        {
-            if (rows.Count == 0 || _busy) return;
-            if (!_serviceReady)
-            {
-                SetNotRunningStatus();
-                return;
-            }
-
-            var target = _selected;
-            _busy = true;
-            UpdateEnabled();
-            SetStatus($"Translating {rows.Count} text(s) to {target.Name}…");
-            var sw = Stopwatch.StartNew();
             try
             {
-                var result = await _api.TranslateAsync(
-                    rows.Select(r => r.Original).ToList(), target.Code, _closing.Token);
-                var texts = result.Translation[0];
-                var langs = result.DetectedLang[0];
-                for (var i = 0; i < rows.Count; i++)
+                var health = await _api.GetHealthAsync(ct);
+                if (health == null)
                 {
-                    var unsupported = langs[i] != "und" && !_supported.Contains(langs[i]);
-                    rows[i].ApplyTranslation(texts[i], langs[i], target.Code, unsupported);
+                    var started = _server.TryStart(out var message);
+                    SetStatus(message);
+                    if (!started) { await MonitorAsync(ct); return; }
+                    // The models take a few seconds to load
+                    var deadline = DateTime.UtcNow.AddMinutes(3);
+                    while (health == null && DateTime.UtcNow < deadline && !_server.HasExited)
+                    {
+                        await Task.Delay(1000, ct);
+                        health = await _api.GetHealthAsync(ct);
+                    }
+                    if (health == null)
+                    {
+                        SetStatus(_server.HasExited
+                            ? $"The translation server stopped (exit code {_server.ExitCode}). See its logs folder: {_server.LogFolder}"
+                            : $"The translation server did not start within 3 minutes ({_api.BaseAddress}).");
+                        await MonitorAsync(ct);
+                        return;
+                    }
                 }
-                if (rows.Count == _rows.Count) _showingTranslation = true;
-                TimingText.Text = $"{rows.Count} text(s) → {target.Name} in {sw.Elapsed.TotalSeconds:0.00} s";
-                SetReadyStatus();
-            }
-            catch (OperationCanceledException) when (_closing.IsCancellationRequested) { }
-            catch (Exception ex)
-            {
-                // Service stopped in the meantime: show it in the status bar; the health
-                // monitor reconnects when the service is started again.
-                if (await _api.GetHealthAsync(_closing.Token) is null)
-                {
-                    _serviceReady = false;
-                    SetNotRunningStatus();
-                }
-                else
-                {
-                    SetStatus("Translation failed");
-                    MessageBox.Show(this, ex.Message, "Translation failed", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-            finally
-            {
-                _busy = false;
-                UpdateEnabled();
-            }
-        }
-
-        private void ShowOriginal()
-        {
-            foreach (var row in _rows) row.ResetToOriginal();
-            _showingTranslation = false;
-            TimingText.Text = "";
-        }
-
-        // ---------- Connection to the separate API ----------
-
-        private async void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            SetStatus($"Connecting to translation service at {_api.BaseAddress}…");
-            try
-            {
-                await MonitorServiceAsync(_closing.Token);
+                OnHealth(health);
+                await MonitorAsync(ct);
             }
             catch (OperationCanceledException) { }
         }
 
-        /// <summary>Polls GET /health for as long as the window is open and updates the UI
-        /// when the service comes up, goes down or has no model.</summary>
-        private async Task MonitorServiceAsync(CancellationToken ct)
+        /// <summary>Checks the API every few seconds and enables the buttons while it answers.</summary>
+        private async Task MonitorAsync(CancellationToken ct)
         {
             while (!ct.IsCancellationRequested)
             {
+                await Task.Delay(_ready ? 5000 : 2000, ct);
                 var health = await _api.GetHealthAsync(ct);
-                if (health is null)
+                if (health == null)
                 {
-                    if (_serviceReady || _health is not null || !StatusIsNotRunning())
-                    {
-                        _serviceReady = false;
-                        _health = null;
-                        if (!_busy) SetNotRunningStatus();
-                        UpdateEnabled();
-                    }
+                    if (_ready || !StatusText.Text.StartsWith("The translation server"))
+                        SetStatus($"Translation server not reachable at {_api.BaseAddress} (retrying...)");
+                    _ready = false;
+                    UpdateButtons();
                 }
-                else if (health.Status != "ok")
+                else if (!_ready || health.Status != "ok")
                 {
-                    _serviceReady = false;
-                    _health = health;
-                    SetStatus("Translation model missing: train it with the scripts in " +
-                              "TranslatorService\\training (see README)");
-                    UpdateEnabled();
+                    OnHealth(health);
                 }
-                else if (!_serviceReady)
-                {
-                    await OnServiceUpAsync(health, ct);
-                }
-                await Task.Delay(_serviceReady ? PollWhileUp : PollWhileDown, ct);
             }
         }
 
-        private async Task OnServiceUpAsync(HealthInfo health, CancellationToken ct)
+        private void OnHealth(HealthInfo health)
         {
-            var languages = await _api.GetLanguagesAsync(ct);
-            if (languages is { Languages: { Count: > 0 } })
+            _ready = health.Status == "ok";
+            SetStatus(_ready
+                ? $"Ready - {_api.BaseAddress}" + (_server.StartedByApp ? " (server started by this app)" : "")
+                : "The translation server is running but its models are missing.");
+            UpdateButtons();
+            _ = DetectPendingAsync();
+        }
+
+        // ------------------------------------------------------------------ adding texts
+
+        private void InputBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
             {
-                BuildTranslateMenu(languages.Languages.Keys);
-                if (!_supported.Contains(_selected.Code))
-                    _selected = Languages.Get(languages.Languages.Keys.First());
-                UpdateLanguageUi();
+                AddText();
+                e.Handled = true;
             }
-            _health = health;
-            _serviceReady = true;
-            SetReadyStatus();
-            UpdateEnabled();
         }
 
-        private bool StatusIsNotRunning() => StatusText.Text.StartsWith("Translation service not running");
+        private void AddButton_Click(object sender, RoutedEventArgs e) => AddText();
 
-        private void SetNotRunningStatus() =>
-            SetStatus($"Translation service not running at {_api.BaseAddress} · start it with " +
-                      "TranslatorService\\start_cluster.bat or start_api.bat (retrying…)");
-
-        private void SetReadyStatus()
+        private void AddText()
         {
-            var info = _health is null ? "" : $" · {_health.Device.ToUpperInvariant()} · {_health.Workers} workers";
-            SetStatus($"Ready · offline{info} · {_api.BaseAddress.Authority}");
+            var text = InputBox.Text.Trim();
+            if (text.Length == 0) return;
+            var entry = new TextEntry(text);
+            _entries.Add(entry);
+            TextList.ScrollIntoView(entry);
+            InputBox.Clear();
+            InputBox.Focus();
+            UpdateButtons();
+            if (_ready) _ = DetectAsync(new[] { entry });
+            else entry.Language = "waiting for the server...";
         }
 
-        // ---------- UI helpers ----------
+        private Task DetectPendingAsync() =>
+            DetectAsync(_entries.Where(e => e.LangCode == null).ToArray());
+
+        private async Task DetectAsync(TextEntry[] entries)
+        {
+            if (entries.Length == 0) return;
+            foreach (var e in entries) e.Language = "detecting...";
+            try
+            {
+                var result = await _api.DetectAsync(entries.Select(e => e.Text).ToList(), _closing.Token);
+                for (var i = 0; i < entries.Length; i++)
+                {
+                    entries[i].LangCode = result.DetectedLang[i];
+                    entries[i].Language = result.DetectedLang[i] == "und"
+                        ? "no language (no letters)"
+                        : result.Language[i];
+                }
+            }
+            catch (TranslatorApiException ex)
+            {
+                foreach (var e in entries) e.Language = "not detected";
+                SetStatus(ex.Message);
+            }
+            catch (OperationCanceledException) { }
+        }
+
+        // ------------------------------------------------------------------ translating
+
+        private async void TranslateButton_Click(object sender, RoutedEventArgs e)
+        {
+            var target = (string)((Button)sender).Tag;
+            var targetName = Languages.NameOf(target);
+            if (_entries.Count == 0)
+            {
+                ResultBox.Text = "Add a text first (type it in the box above and press Enter).";
+                return;
+            }
+
+            _busy = true;
+            UpdateButtons();
+            SetStatus($"Translating {_entries.Count} text(s) into {targetName}...");
+            try
+            {
+                var entries = _entries.ToArray();
+                var response = await _api.TranslateAsync(entries.Select(x => x.Text).ToList(), target, _closing.Token);
+                var sb = new StringBuilder();
+                sb.AppendLine($"Translation into {targetName}:");
+                for (var i = 0; i < entries.Length; i++)
+                {
+                    var source = response.DetectedLang[0][i];
+                    var translated = response.Translated?[0][i] ?? true;
+                    var translation = response.Translation[0][i];
+                    entries[i].LangCode = source;
+                    if (source != "und") entries[i].Language = Languages.NameOf(source);
+
+                    sb.AppendLine();
+                    sb.AppendLine(entries[i].Text);
+                    if (translated)
+                        sb.AppendLine($"{Languages.NameOf(source)} -> {targetName}: {translation}");
+                    else if (source == target)
+                        sb.AppendLine($"Already {targetName}, unchanged.");
+                    else if (source == "und")
+                        sb.AppendLine("No language detected (no letters), unchanged.");
+                    else
+                        sb.AppendLine($"{Languages.NameOf(source)} cannot be translated (only English, French and Spanish), unchanged.");
+                }
+                ResultBox.Text = sb.ToString();
+                ResultBox.ScrollToHome();
+                SetStatus($"Ready - {_api.BaseAddress}");
+            }
+            catch (TranslatorApiException ex)
+            {
+                ResultBox.Text = ex.Message;
+                SetStatus(ex.Message);
+            }
+            catch (OperationCanceledException) { }
+            finally
+            {
+                _busy = false;
+                UpdateButtons();
+            }
+        }
+
+        // ------------------------------------------------------------------ helpers
+
+        private void UpdateButtons()
+        {
+            var enabled = _ready && !_busy;
+            EnglishButton.IsEnabled = enabled;
+            FrenchButton.IsEnabled = enabled;
+            SpanishButton.IsEnabled = enabled;
+        }
 
         private void SetStatus(string text) => StatusText.Text = text;
-
-        private void UpdateLanguageUi()
-        {
-            foreach (var pair in _languageItems)
-            {
-                pair.Value.IsChecked = pair.Key == _selected.Code;
-            }
-            TranslateButton.Content = $"Translate → {_selected.Name}";
-            TranslateMenu.Header = $"_Translate  ·  {_selected.Name}";
-            LanguageText.Text = $"Target: {_selected.Name} ({_selected.NativeName})";
-        }
-
-        private void UpdateHeader() =>
-            HeaderText.Text = _rows.Count == 1 ? "1 text" : $"{_rows.Count} texts";
-
-        private void UpdateEnabled()
-        {
-            var canTranslate = _serviceReady && !_busy;
-            TranslateButton.IsEnabled = canTranslate;
-            foreach (var item in _languageItems.Values) item.IsEnabled = canTranslate;
-            Cursor = _busy ? Cursors.AppStarting : null;
-        }
-
-        private void Window_Closed(object? sender, EventArgs e)
-        {
-            _closing.Cancel();
-            _api.Dispose();
-        }
     }
 }

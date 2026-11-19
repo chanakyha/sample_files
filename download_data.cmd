@@ -1,6 +1,6 @@
 @echo off
 rem Downloads the training data from GitHub (about 1.1 GB) and converts it into
-rem TranslatorService\training\data\raw\. Only needed to retrain the models: the trained
+rem TranslatorTraining\data\raw\. Only needed to retrain the models: the trained
 rem models are already in the repository.
 rem
 rem Usage:
@@ -11,7 +11,7 @@ rem   download_data.cmd --list          (only print the download addresses)
 rem
 rem Files already downloaded are kept, so running it again continues where it stopped.
 setlocal
-cd /d "%~dp0TranslatorService"
+cd /d "%~dp0TranslatorTraining"
 
 if /i "%~1"=="--help" goto usage
 if /i "%~1"=="-h" goto usage
@@ -19,7 +19,7 @@ if "%~1"=="/?" goto usage
 
 set "PY=.venv\Scripts\python.exe"
 if not exist "%PY%" (
-    echo The Python environment is missing. Run setup.cmd first.
+    echo The training environment TranslatorTraining\.venv is missing. Run: setup.cmd --training
     exit /b 1
 )
 "%PY%" -c "import requests" 2>nul
@@ -28,10 +28,10 @@ if errorlevel 1 (
     exit /b 1
 )
 
-echo Downloading the training data from GitHub into TranslatorService\training\data\raw\
+echo Downloading the training data from GitHub into TranslatorTraining\data\raw\
 echo (about 1.1 GB; then converting, about 10 minutes in total)
 echo.
-"%PY%" -X utf8 training\download_data.py %*
+"%PY%" -X utf8 download_data.py %*
 if errorlevel 1 (
     echo.
     echo DOWNLOAD FAILED. Run it again to retry; finished files are kept.
@@ -39,14 +39,14 @@ if errorlevel 1 (
     exit /b 1
 )
 echo.
-echo Done. Next steps to retrain, from TranslatorService ^(see docs\MODEL_TRAINING.md^):
-echo   .venv\Scripts\python training\prepare_data.py
-echo   .venv\Scripts\python training\train_lid.py
-echo   .venv\Scripts\python training\train_nmt.py --hours 10
+echo Done. Next steps to retrain, in TranslatorTraining ^(see docs\MODEL_TRAINING.md^):
+echo   .venv\Scripts\python prepare_data.py
+echo   .venv\Scripts\python train_lid.py
+echo   .venv\Scripts\python train_nmt.py --hours 10
 exit /b 0
 
 :usage
-echo Downloads the training data from GitHub into TranslatorService\training\data\raw\.
+echo Downloads the training data from GitHub into TranslatorTraining\data\raw\.
 echo.
 echo   download_data.cmd                                  direct connection, or HTTPS_PROXY
 echo   download_data.cmd --proxy http://host:port         through a proxy

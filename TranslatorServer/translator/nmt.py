@@ -1,6 +1,6 @@
 """Our own Transformer translation model (encoder-decoder), written from scratch in PyTorch.
 
-Used both by training/train_nmt.py and by the runtime engine.
+Used both by TranslatorTraining/train_nmt.py and by the runtime engine.
 
 Design (Vaswani et al. 2017, with common modern choices):
   * pre-layer-norm, sinusoidal positions, shared (tied) embeddings for encoder, decoder and

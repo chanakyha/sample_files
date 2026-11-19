@@ -1,6 +1,6 @@
 """Step 4: train our own language detector for the 24 EU languages.
 
-Data (training/data/raw/mono/<lang>.txt from download_data.py, all from GitHub): Tatoeba
+Data (data/raw/mono/<lang>.txt from download_data.py, all from GitHub): Tatoeba
 sentences, Universal Dependencies treebank sentences and, for de/it/nl/pt, Europarl sentences.
 Balanced to --per-lang sentences per language (small languages are oversampled).
 
@@ -9,15 +9,15 @@ Robustness augmentation (applied to a copy of part of the data):
   * punctuation removed
   * cut down to the first 1-4 words (very short input)
 
-Plus training/lid_phrases.tsv: greetings and short chat phrases in all 24 languages (Tatoeba has
+Plus lid_phrases.tsv: greetings and short chat phrases in all 24 languages (Tatoeba has
 few of them, and treebank / parliament text has almost none), repeated with
 names, casing and punctuation variants. Phrases that also occur in an evaluation set are
 dropped, so the evaluation stays blind.
 
 Output: models/lid/lid.pt + config.json. Prints accuracy on held-out sentences and on the
-challenge set training/lid_challenge.tsv (short phrases, names, casual text).
+challenge set lid_challenge.tsv (short phrases, names, casual text).
 
-Usage:  python training/train_lid.py
+Usage:  python train_lid.py
 """
 
 from __future__ import annotations
@@ -35,7 +35,7 @@ import torch
 import torch.nn.functional as F
 
 ROOT = Path(__file__).resolve().parent
-SERVICE = ROOT.parent
+SERVICE = ROOT.parent / "TranslatorServer"  # the API folder: model code (translator/) and models/
 sys.path.insert(0, str(SERVICE))
 from translator.languages import LANGUAGE_CODES  # noqa: E402
 from translator.lid import LIDModel, features  # noqa: E402
@@ -67,7 +67,7 @@ def read_sentences(lang: str) -> list[str]:
     (sources: tatoeba, ud, europarl)."""
     path = MONO / f"{lang}.txt"
     if not path.is_file():
-        sys.exit(f"{path} not found: run training/download_data.py first")
+        sys.exit(f"{path} not found: run download_data.py first")
     with open(path, encoding="utf-8", newline="\n") as f:
         return [line.rstrip("\n").partition("\t")[2].strip() for line in f]
 

@@ -1,5 +1,5 @@
 """Offline language detection for the 24 EU languages with our own model (translator/lid.py),
-trained by training/train_lid.py and stored in models/lid/."""
+trained by TranslatorTraining/train_lid.py and stored in models/lid/."""
 
 from __future__ import annotations
 
@@ -42,7 +42,7 @@ class LanguageDetector:
                 from .engine import ModelNotFound
 
                 raise ModelNotFound(
-                    f"Language-ID model not found at {self.path}. Run training/train_lid.py."
+                    f"Language-ID model not found at {self.path}. Run TranslatorTraining/train_lid.py."
                 )
             with open(self.path / "config.json", encoding="utf-8") as f:
                 cfg = json.load(f)

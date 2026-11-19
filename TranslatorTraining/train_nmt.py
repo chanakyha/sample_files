@@ -1,16 +1,16 @@
 """Step 3: train our Transformer translation model (en <-> es <-> fr) on the GPU or CPU.
 
-Reads training/data/prepared (from prepare_data.py). Every --eval-minutes it scores the dev
+Reads data/prepared (from prepare_data.py). Every --eval-minutes it scores the dev
 set with BLEU, saves a resumable checkpoint, and exports the best model so far to
 models/nmt-en-es-fr/, which the API uses. Training can be stopped at any time:
-  * create the file training/STOP (or press Ctrl+C) -> saves and exits cleanly
+  * create the file STOP (or press Ctrl+C) -> saves and exits cleanly
   * run again with --resume to continue
 
 --mix sets how often each corpus is seen per epoch (e.g. Tatoeba=3 repeats the short everyday
 sentences 3 times, Europarl=0.3 uses a random 30% of the parliament text each epoch).
 
-Usage:  python training/train_nmt.py --hours 8
-        python training/train_nmt.py --hours 4 --resume
+Usage:  python train_nmt.py --hours 8
+        python train_nmt.py --hours 4 --resume
 GPU:    a CUDA build of PyTorch is needed (see README, "Training on a GPU").
 """
 
@@ -32,7 +32,7 @@ import torch
 import torch.nn.functional as F
 
 ROOT = Path(__file__).resolve().parent
-SERVICE = ROOT.parent
+SERVICE = ROOT.parent / "TranslatorServer"  # the API folder: model code (translator/) and models/
 sys.path.insert(0, str(SERVICE))
 from translator.nmt import NMTConfig, TransformerNMT  # noqa: E402
 

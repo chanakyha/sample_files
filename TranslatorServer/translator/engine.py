@@ -1,4 +1,4 @@
-"""Offline translation with our own Transformer model (trained by training/train_nmt.py).
+"""Offline translation with our own Transformer model (trained by TranslatorTraining/train_nmt.py).
 
 The model lives in models/nmt-en-es-fr/ (model.pt, spm.model, config.json); override the
 base folder with TRANSLATOR_MODEL_DIR. Nothing is downloaded at runtime.
@@ -15,6 +15,7 @@ import json
 import logging
 import os
 import re
+import sys
 import threading
 from collections import OrderedDict
 from pathlib import Path
@@ -27,7 +28,16 @@ from .nmt import NMTConfig, TransformerNMT
 logger = logging.getLogger(__name__)
 
 MODEL_FOLDER = "nmt-en-es-fr"
-DEFAULT_MODEL_DIR = Path(__file__).resolve().parent.parent / "models"
+
+
+def base_dir() -> Path:
+    """The server folder: next to TranslatorServer.exe in the bundled build, else this source folder."""
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve().parent
+    return Path(__file__).resolve().parent.parent
+
+
+DEFAULT_MODEL_DIR = base_dir() / "models"
 
 # The model is trained on single sentences; split paragraphs before translating.
 _SENTENCE_SPLIT = re.compile(r"(?<=[.!?;:])\s+")
@@ -129,7 +139,7 @@ class Translator:
             if not self.installed:
                 raise ModelNotFound(
                     f"Translation model not found at {self.path}. "
-                    "Train it with the scripts in training/ (see README)."
+                    "Train it with the scripts in TranslatorTraining/ (see README)."
                 )
             torch.set_num_threads(self.threads)
             with open(self.path / "config.json", encoding="utf-8") as f:

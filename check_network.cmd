@@ -112,7 +112,7 @@ echo                 set HTTP_PROXY=%PROXY%
 echo   PowerShell:   $env:HTTPS_PROXY = "%PROXY%"
 echo                 $env:HTTP_PROXY = "%PROXY%"
 echo.
-echo pip, git, dotnet and training\download_data.py all use these variables. Or pass it directly:
+echo pip, git, dotnet and TranslatorTraining\download_data.py all use these variables. Or pass it directly:
 echo   setup.cmd --proxy %PROXY%
 echo   download_data.cmd --proxy %PROXY%
 echo   git config --global http.proxy %PROXY%

@@ -1,6 +1,6 @@
 """End-to-end API tests with our own trained models (fully offline).
 
-Requires models/nmt-en-es-fr and models/lid (see README: training).
+Requires models/nmt-en-es-fr and models/lid (trained in ../TranslatorTraining).
 """
 
 import time
@@ -187,3 +187,15 @@ def test_request_id_and_log_entry():
     detail = next(e for e in mine if e["logger"] == "translator.api")
     assert detail["sentences"] == 1 and detail["detected"] == {"es": 1} and detail["target"] == "en"
     assert "Muchas" not in json.dumps(mine)
+
+
+def test_detect_endpoint():
+    r = client.post("/detect", json={"text": ["El motor hace un ruido extraño al arrancar.",
+                                              "Merci beaucoup.", "Das ist gut.", "1234 !!"]})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["detected_lang"] == ["es", "fr", "de", "und"]
+    assert body["language"][:3] == ["Spanish", "French", "German"]
+    assert body["translatable"] == [True, True, False, False]
+    assert body["confidence"][3] == 0.0
+    assert client.post("/detect", json={"text": []}).status_code == 422

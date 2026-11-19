@@ -4,7 +4,8 @@ Offline translation between **English, Spanish and French** (all 6 directions) w
 language detection for the **24 official EU languages**, served over a FastAPI REST API.
 
 Both models are **our own**, trained from scratch on public datasets with the scripts in
-[training/](training/). No pretrained or Hugging Face models are used.
+[../TranslatorTraining/](../TranslatorTraining/) (training data, scripts, scores). No pretrained
+or Hugging Face models are used. This folder holds only what the server needs to run.
 
 | Model | What | Size |
 |-------|------|------|
@@ -15,111 +16,11 @@ Code: [translator/nmt.py](translator/nmt.py) (model, beam search),
 [translator/lid.py](translator/lid.py) (detector), [translator/engine.py](translator/engine.py)
 (batching, cache), [app.py](app.py) (API).
 
-## Training data (downloaded from GitHub only)
+## Setup
 
-The original dataset hosts and Kaggle are blocked on the corporate network, so
-[training/download_data.py](training/download_data.py) takes everything from public GitHub
-repositories (github.com, codeload.github.com, raw.githubusercontent.com):
-
-| Data | GitHub repository | Used for | Licence |
-|------|-------------------|----------|---------|
-| Tatoeba (official OPUS copy) | [Helsinki-NLP/Tatoeba-Challenge](https://github.com/Helsinki-NLP/Tatoeba-Challenge) | translation: everyday sentences; detection | CC BY 2.0 FR |
-| Tatoeba en-fr / en-es | [viljarpuusepp/Attention](https://github.com/viljarpuusepp/Attention) (`fra.txt`), [doozan/spanish_data](https://github.com/doozan/spanish_data) (`sentences.tsv`) | translation: everyday sentences | CC BY 2.0 FR |
-| Europarl (XML per session) | [UDS-SFB-B6-Datasets/Multilingual-Parallel-Direct-Europarl](https://github.com/UDS-SFB-B6-Datasets/Multilingual-Parallel-Direct-Europarl) | translation: formal text (300k pairs per language pair); detection (de, it, nl, pt) | no copyright restrictions |
-| Universal Dependencies treebanks | [UniversalDependencies](https://github.com/UniversalDependencies) (28 repositories) | detection: sentences in all 24 languages | mostly CC BY-SA 4.0 (per treebank) |
-
-Details, including how the Europarl speeches are aligned: [../docs/MODEL_TRAINING.md](../docs/MODEL_TRAINING.md).
-
-## Training (needs GitHub access only for step 1)
-
-```powershell
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements-train.txt
-
-python training\download_data.py      # ~1.1 GB from GitHub into training/data/raw (--proxy URL)
-python training\prepare_data.py       # clean, split dev/test, train tokenizer, encode (~20 min)
-python training\train_lid.py          # language detector (~45 min)
-python training\train_nmt.py --hours 10
-```
-
-`train_nmt.py` scores the dev set every 30 minutes and exports the best model so far to
-`models/nmt-en-es-fr/`, so the API can be used while training continues. To stop early, create
-the file `training\STOP` (it saves and exits); continue later with `--resume`. Progress is in
-`training\logs\train_nmt.log`.
-
-On a 4-core laptop CPU (i5-1035G1) training runs at ~770 target tokens/s, about 7 s per step.
-A GPU is much faster; the shipped model was trained on a GPU.
-
-### Training on a GPU
-
-Training (only training; the API runs on the CPU) can use an NVIDIA GPU. Install a CUDA build of
-PyTorch into a separate environment so the runtime `.venv` stays small. CUDA 12.6 builds still
-support older GPUs (e.g. GeForce MX130, compute capability 5.0). The shipped model:
-
-```powershell
-python -m venv .venv-gpu
-.venv-gpu\Scripts\pip install torch --index-url https://download.pytorch.org/whl/cu126
-.venv-gpu\Scripts\pip install sentencepiece numpy sacrebleu
-# phase 1: 14 h
-.venv-gpu\Scripts\python training\train_nmt.py --hours 14 --max-tokens 3000 --accum 2 `
-    --mix "Tatoeba=3,Europarl=0.3,Domain=4,Names=1"
-# phase 2: 3 h fine-tuning on the domain sentences
-.venv-gpu\Scripts\python training\train_nmt.py --resume --new-epoch --reset-best --hours 3 `
-    --max-tokens 3000 --accum 2 --mix "Tatoeba=1,Europarl=0.15,Domain=8,Names=1"
-```
-
-`--device auto` (default) picks the GPU when available. `--max-tokens` × `--accum` is the batch
-size per step; lower `--max-tokens` if the GPU runs out of memory. `--mix` weights the corpora:
-the short everyday Tatoeba sentences are repeated, the long parliament text is subsampled.
-
-### Results
-
-Language detection (held-out sentences, up to 500 per language): **98.8%** (Slovenian 92%, all
-others 98–100%). Challenge set of 143 short phrases, sentences with foreign names and casual
-text in many languages ([training/lid_challenge.tsv](training/lid_challenge.tsv)): **139/143**.
-Everyday English/French/Spanish phrases, greetings and car-service sentences
-([training/lid_everyday.tsv](training/lid_everyday.tsv)): **146/150**; a second set of casual
-phrases ([training/lid_everyday2.tsv](training/lid_everyday2.tsv)): **70/70**. The remaining
-misses are single words that exist in several languages ("no", "non"; "hi" is Maltese for
-"she") and short phrases of languages with little GitHub data ("Ďakujem pekne", "Köszönöm
-szépen"). These sets are used only for evaluation: `train_lid.py` drops any line of
-[training/lid_phrases.tsv](training/lid_phrases.tsv) (hand-written greetings and short chat
-phrases in all 24 languages, used for training) that also occurs in an evaluation set.
-
-The detector gives English, Spanish and French (the languages the translator supports) a small
-log-prior of 1.5, chosen on held-out data so it costs the other 21 languages under 0.5%
-accuracy; it only decides genuinely ambiguous short input.
-
-Translation, held-out test set (500 sentences per direction and corpus, never seen in training;
-beam 4). "Domain" is [training/domain_test.tsv](training/domain_test.tsv): 45 hand-written
-car-service, greeting and introduction sentences (with unusual names), excluded from training.
-Model from step 26,881 (14 h + 3 h on a GPU), dev BLEU 31.59:
-
-| Direction | Everyday (Tatoeba) BLEU / chrF | Formal (Europarl) BLEU / chrF | Domain BLEU / chrF |
-|-----------|------------------|------------------|------------------|
-| en → es | 39.9 / 61.2 | 31.5 / 58.0 | 66.7 / 83.9 |
-| en → fr | 42.6 / 61.1 | 28.1 / 56.7 | 71.7 / 85.9 |
-| es → en | 44.8 / 62.8 | 31.4 / 57.8 | 67.8 / 81.2 |
-| es → fr | 38.8 / 59.7 | 28.6 / 56.4 | 64.4 / 80.2 |
-| fr → en | 47.9 / 63.6 | 30.0 / 56.8 | 71.4 / 82.6 |
-| fr → es | 36.3 / 59.1 | 29.9 / 56.8 | 60.3 / 78.9 |
-| **all** | **41.7 / 61.2** | **29.9 / 57.1** | **67.7 / 82.1** |
-
-**Overall BLEU 32.7, chrF 58.2.** The previous model (trained on the OPUS downloads) scores
-30.8 / 56.8 on the same test set (Domain 59.8).
-
-Two generated corpora teach the model the car-service domain and names
-([training/domain_data.py](training/domain_data.py), used by `prepare_data.py`):
-
-* **Domain**: car-service, greeting and introduction sentences in en/es/fr, built from
-  hand-written templates and word lists (parts, times, noises, names).
-* **Names**: Tatoeba pairs with "Tom"/"Mary" replaced on both sides by random real or made-up
-  names, so the model learns to copy names it has never seen (e.g. "Thirunavukkarasu").
-
-Short everyday and car-service sentences are mostly correct; long parliament text is
-understandable but has errors. `GET /health` shows the dev BLEU of the currently exported model;
-rerun `python training\evaluate_nmt.py` after more training.
+`setup.cmd --skipdotnet` in the repository root creates `.venv` here and installs
+[requirements.txt](requirements.txt). By hand: `python -m venv .venv`, then
+`.venv\Scripts\pip install -r requirements.txt`.
 
 ## Run
 
@@ -137,6 +38,24 @@ start_cluster.bat 4           # = python cluster.py --instances 4 --port 8000
 
 Interactive docs: http://localhost:8000/docs. Fully offline: only `models/` is read. Set
 `TRANSLATOR_HOST=0.0.0.0` first to accept connections from other machines.
+
+## Bundled exe (no Python needed)
+
+`build_server_exe.cmd` in the repository root builds the server with PyInstaller into
+`dist/TranslatorServer/`: `TranslatorServer.exe`, `_internal/` (Python, PyTorch, FastAPI) and a copy
+of `models/` (about 580 MB in total). Copy that folder to any Windows 10/11 x64 PC and run:
+
+```powershell
+TranslatorServer.exe                          # cluster: 2 instances + load balancer on :8000
+TranslatorServer.exe --instances 4 --host 0.0.0.0
+TranslatorServer.exe --single --port 8000     # one instance
+```
+
+[server_main.py](server_main.py) is the entry point. In the exe, the cluster supervisor starts
+each instance as `TranslatorServer.exe worker --port 800i` and the load balancer as
+`TranslatorServer.exe balancer ...`; the API code is the same as when it runs from source.
+[TranslatorServer.spec](TranslatorServer.spec) is the PyInstaller recipe. Logs go to `logs/`
+next to the exe.
 
 ## Scaling: load balancer
 
@@ -164,7 +83,7 @@ clients; the instances listen on 127.0.0.1.
 
 [tools/loadtest.py](tools/loadtest.py) sends requests of 10 new, random sentences each (no cache
 hits) and records throughput, latency and errors. Results are appended to
-`logs/loadtest.jsonl`. These numbers come from a 4-core laptop CPU, beam 4, with
+`logs/loadtest.jsonl`. These numbers come from a 4-core processor, beam 4, with
 `start_cluster.bat 4`.
 
 | Test | Requests | Errors | Throughput | Latency p50 / p95 / max |
@@ -196,10 +115,9 @@ hits) and records throughput, latency and errors. Results are appended to
 python tools\loadtest.py                                   # ramp, spike, large, mixed
 python tools\loadtest.py --scenario soak --soak-seconds 300
 python tools\loadtest.py --scenario chaos --chaos-seconds 120   # needs cluster.py
-python tools\score_api.py                                  # BLEU/chrF through the API
 ```
 
-`tools/score_api.py` sends the whole test set through the running API with automatic
+[../TranslatorTraining/score_api.py](../TranslatorTraining/score_api.py) sends the whole test set through the running API with automatic
 language detection, as clients use it. Through the 4-instance cluster: **BLEU 32.7, chrF 58.1,
 source language detected correctly for 99.4%** of the 6,270 sentences. This matches the
 direct model evaluation, so the load balancer and detection do not lower quality.
@@ -265,10 +183,12 @@ Status, model path, dev BLEU and training step of the loaded model, threads, bea
 | `TRANSLATOR_THREADS` | CPU cores / 2 | PyTorch threads |
 | `TRANSLATOR_BATCH_SIZE` | `32` | Sentences per batch |
 | `TRANSLATOR_CACHE_SIZE` | `20000` | Cached sentence translations (`0` disables) |
-| `TRANSLATOR_MODEL_DIR` | `./models` | Where the models are |
+| `TRANSLATOR_MODEL_DIR` | `./models` (exe: `models\` next to it) | Where the models are |
 | `PRELOAD_MODELS` | `1` | Load models at startup |
 
 ## Moving to another machine
+
+Easiest: copy the bundled exe folder (above). From source:
 
 `models/` is only 85 MB: copy it (zip, USB, network share) next to the code. Runtime needs only
 `pip install -r requirements.txt` (FastAPI, PyTorch, SentencePiece); for a machine without
@@ -282,12 +202,12 @@ pip install --no-index --find-links wheels -r requirements.txt   # on the offlin
 ## Limitations
 
 - Translation quality is far below large pretrained systems: the model is small and trained for
-  hours on a laptop CPU. Expect correct simple sentences and rough or wrong longer ones.
+  hours. Expect correct simple sentences and rough or wrong longer ones.
 - Only en/es/fr can be translated; other detected languages are returned unchanged.
 - Very short text in closely related languages can be confused (e.g. Croatian/Slovenian).
 
 ## Tests
 
 ```powershell
-pytest -v
+.venv\Scripts\python -m pytest -v     # 39 tests
 ```

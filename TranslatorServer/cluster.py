@@ -2,6 +2,7 @@
 
     python cluster.py                      # 2 instances on 8001-8002, load balancer on 8000
     python cluster.py --instances 4 --port 8000 --host 0.0.0.0
+    TranslatorServer.exe --instances 4     (the bundled build runs this same code)
 
 * Each instance is a separate process (own model copy, own CPU threads), so translations run
   in parallel. CPU threads are split between the instances (--threads to override).
@@ -24,8 +25,25 @@ from pathlib import Path
 
 from logsetup import setup_logging
 
-SERVICE = Path(__file__).resolve().parent
+FROZEN = getattr(sys, "frozen", False)  # running as the bundled TranslatorServer.exe
+SERVICE = Path(sys.executable).resolve().parent if FROZEN else Path(__file__).resolve().parent
 logger = logging.getLogger("cluster")
+
+
+def worker_cmd(port: int) -> list[str]:
+    """Command that starts one API instance."""
+    args = ["--host", "127.0.0.1", "--port", str(port), "--no-access-log"]
+    if FROZEN:  # TranslatorServer.exe worker ... (see server_main.py)
+        return [sys.executable, "worker", *args]
+    return [sys.executable, "-m", "uvicorn", "app:app", *args]
+
+
+def balancer_cmd(host: str, port: int, urls: list[str]) -> list[str]:
+    """Command that starts the load balancer."""
+    args = ["--host", host, "--port", str(port), "--backends", ",".join(urls)]
+    if FROZEN:
+        return [sys.executable, "balancer", *args]
+    return [sys.executable, "loadbalancer.py", *args]
 
 
 class Child:
@@ -48,7 +66,7 @@ class Child:
                 self.proc.kill()
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
     cpus = os.cpu_count() or 4
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--instances", type=int, default=int(os.getenv("TRANSLATOR_INSTANCES", "2")))
@@ -57,22 +75,20 @@ def main() -> None:
     p.add_argument("--port", type=int, default=8000, help="load balancer port")
     p.add_argument("--base-port", type=int, default=8001, help="first instance port")
     p.add_argument("--threads", type=int, default=0, help="CPU threads per instance (default: split cores)")
-    args = p.parse_args()
+    args = p.parse_args(argv)
     setup_logging("cluster")
 
     threads = args.threads or max(1, cpus // args.instances)
-    python = sys.executable
     children: list[Child] = []
     urls = []
     for i in range(args.instances):
         port = args.base_port + i
         env = dict(os.environ, TRANSLATOR_INSTANCE=f"api-{port}", TRANSLATOR_THREADS=str(threads),
                    PYTHONIOENCODING="utf-8")
-        children.append(Child(f"api-{port}", [python, "-m", "uvicorn", "app:app", "--host", "127.0.0.1",
-                                               "--port", str(port), "--no-access-log"], env))
+        children.append(Child(f"api-{port}", worker_cmd(port), env))
         urls.append(f"http://127.0.0.1:{port}")
-    balancer = Child("loadbalancer", [python, "loadbalancer.py", "--host", args.host, "--port", str(args.port),
-                                      "--backends", ",".join(urls)], dict(os.environ, PYTHONIOENCODING="utf-8"))
+    balancer = Child("loadbalancer", balancer_cmd(args.host, args.port, urls),
+                     dict(os.environ, PYTHONIOENCODING="utf-8"))
     logger.info("cluster: %d instance(s) x %d threads, load balancer on http://%s:%d",
                 args.instances, threads, args.host, args.port,
                 extra={"fields": {"instances": args.instances, "threads": threads, "port": args.port}})

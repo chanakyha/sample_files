@@ -1,12 +1,15 @@
 <#
 .SYNOPSIS
-    Sets up the EU Translator on this PC: the Python environment for the API, and the
-    .NET 5 SDK + build of the desktop app.
+    Sets up the EU Translator on this PC: the Python environment for the API server, optionally
+    the training environments and the bundled server exe, and the .NET 5 SDK + build of the
+    desktop app.
 
 .DESCRIPTION
-    Python: creates TranslatorService\.venv and installs requirements.txt (with -Training also
-    requirements-train.txt). With -Gpu it also creates TranslatorService\.venv-gpu with a CUDA
-    build of PyTorch for training on an NVIDIA GPU.
+    Python: creates TranslatorServer\.venv and installs TranslatorServer\requirements.txt.
+    With -Training it also creates TranslatorTraining\.venv with TranslatorTraining\requirements.txt;
+    with -Gpu, TranslatorTraining\.venv-gpu with a CUDA build of PyTorch for training on an NVIDIA
+    GPU. With -ServerExe it builds TranslatorServer\dist\TranslatorServer\TranslatorServer.exe
+    (build_server_exe.cmd).
 
     .NET: the desktop app targets .NET 5 and is built with the .NET 5 SDK (5.0.408, pinned in
     global.json). If that SDK is not installed on the PC, it is downloaded from Microsoft
@@ -34,15 +37,17 @@ param(
     [string]$Proxy = "",
     # Log in to the proxy with your Windows account (for proxies that use Windows sign-in)
     [switch]$ProxyUseDefaultCredentials,
-    # Also install the packages for the training scripts (sacrebleu, requests)
+    # Also create TranslatorTraining\.venv for the training scripts
     [switch]$Training,
-    # Also create .venv-gpu with PyTorch for NVIDIA GPUs (CUDA 12.6), for training only
+    # Also create TranslatorTraining\.venv-gpu with PyTorch for NVIDIA GPUs (CUDA 12.6), for training only
     [switch]$Gpu,
+    # Also build the bundled server TranslatorServer.exe (PyInstaller)
+    [switch]$ServerExe,
     # Install Python packages from this folder of wheel files instead of from pypi.org
     [string]$Wheels = "",
     # Run the Python test suite (pytest) at the end
     [switch]$RunTests,
-    # Recreate TranslatorService\.venv even if it exists
+    # Recreate the Python environments even if they exist
     [switch]$Recreate,
     [switch]$SkipPython,
     [switch]$SkipDotnet
@@ -55,9 +60,11 @@ $ProgressPreference = "SilentlyContinue"     # the progress bar makes downloads 
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 $Root = $PSScriptRoot
-$Service = Join-Path $Root "TranslatorService"
+$Service = Join-Path $Root "TranslatorServer"
 $Venv = Join-Path $Service ".venv"
-$VenvGpu = Join-Path $Service ".venv-gpu"
+$TrainDir = Join-Path $Root "TranslatorTraining"
+$VenvTrain = Join-Path $TrainDir ".venv"
+$VenvGpu = Join-Path $TrainDir ".venv-gpu"
 
 $DotnetSdkVersion = "5.0.408"                  # last .NET 5 SDK, includes runtime 5.0.17
 $DotnetZipUrl = "https://builds.dotnet.microsoft.com/dotnet/Sdk/$DotnetSdkVersion/dotnet-sdk-$DotnetSdkVersion-win-x64.zip"
@@ -90,7 +97,7 @@ Write-Host "EU Translator setup" -ForegroundColor Cyan
 Write-Host "Folder: $Root"
 
 if ($Proxy) {
-    # pip, git, dotnet and training\download_data.py all use these
+    # pip, git, dotnet and TranslatorTraining\download_data.py all use these
     $env:HTTPS_PROXY = $Proxy
     $env:HTTP_PROXY = $Proxy
     Info "Proxy: $Proxy"
@@ -130,24 +137,22 @@ function Get-PipArgs {
     return $a
 }
 
-function Install-PythonEnv {
-    Step "Python environment for the API (TranslatorService\.venv)"
-    $venvPython = Join-Path $Venv "Scripts\python.exe"
-
-    if ($Recreate -and (Test-Path $Venv)) {
-        Info "Removing the old .venv (-Recreate)"
-        Remove-Item $Venv -Recurse -Force -ErrorAction Stop
+# Creates (or reuses) a virtual environment and returns the path of its python.exe
+function New-Venv([string]$path, [string]$label) {
+    $venvPython = Join-Path $path "Scripts\python.exe"
+    if ($Recreate -and (Test-Path $path)) {
+        Info "Removing the old $label (-Recreate)"
+        Remove-Item $path -Recurse -Force -ErrorAction Stop
     }
     $usable = $false
     if (Test-Path $venvPython) {
         & $venvPython -c "import sys" 2>$null
         $usable = ($LASTEXITCODE -eq 0)
         if (-not $usable) {
-            Warn ".venv exists but does not work (Python moved or uninstalled); recreating it"
-            Remove-Item $Venv -Recurse -Force -ErrorAction Stop
+            Warn "$label exists but does not work (Python moved or uninstalled); recreating it"
+            Remove-Item $path -Recurse -Force -ErrorAction Stop
         }
     }
-
     if (-not $usable) {
         $found = Find-Python
         if (-not $found) {
@@ -157,25 +162,25 @@ function Install-PythonEnv {
         $exe = $found[0]
         $pre = @($found | Select-Object -Skip 1 -First ($found.Count - 2))
         Info "Using Python $($found[-1]): $exe"
-        Run $exe ($pre + @("-m", "venv", $Venv)) "creating the virtual environment"
-        Ok "created .venv"
+        Run $exe ($pre + @("-m", "venv", $path)) "creating $label"
+        Ok "created $label"
     } else {
         $v = & $venvPython -c "import sys; print('%d.%d.%d' % sys.version_info[:3])"
-        Ok ".venv already exists (Python $v)"
+        Ok "$label already exists (Python $v)"
     }
-
     if (-not $Wheels) {
         $upgrade = @("-m", "pip", "install", "--upgrade", "pip", "--disable-pip-version-check", "-q") + @(Get-PipArgs | Where-Object { $_ })
-        & $venvPython @upgrade
+        & $venvPython @upgrade | Out-Null
         if ($LASTEXITCODE -ne 0) { Warn "could not upgrade pip; continuing with the installed version" }
     }
+    return $venvPython
+}
 
+function Install-PythonEnv {
+    Step "Python environment for the API server (TranslatorServer\.venv)"
+    $venvPython = @(New-Venv $Venv "TranslatorServer\.venv")[-1]   # [-1]: only the returned path, not program output
     Info "Installing requirements.txt (PyTorch is about 200 MB; this can take a few minutes)"
     Run $venvPython (@("-m", "pip", "install", "--disable-pip-version-check", "-r", (Join-Path $Service "requirements.txt")) + (Get-PipArgs)) "installing requirements.txt"
-    if ($Training) {
-        Info "Installing requirements-train.txt"
-        Run $venvPython (@("-m", "pip", "install", "--disable-pip-version-check", "-r", (Join-Path $Service "requirements-train.txt")) + (Get-PipArgs)) "installing requirements-train.txt"
-    }
 
     $check = "import fastapi, uvicorn, torch, sentencepiece, numpy, httpx; print('torch', torch.__version__)"
     $out = & $venvPython -c $check
@@ -183,18 +188,28 @@ function Install-PythonEnv {
     Ok "packages work ($out)"
 
     foreach ($m in @("models\nmt-en-es-fr\model.pt", "models\nmt-en-es-fr\spm.model", "models\lid\lid.pt")) {
-        if (-not (Test-Path (Join-Path $Service $m))) { Warn "model file missing: TranslatorService\$m (get it from git, or train it)" }
+        if (-not (Test-Path (Join-Path $Service $m))) { Warn "model file missing: TranslatorServer\$m (get it from git, or train it)" }
     }
 }
 
+function Install-TrainingEnv {
+    Step "Python environment for training (TranslatorTraining\.venv)"
+    $venvPython = @(New-Venv $VenvTrain "TranslatorTraining\.venv")[-1]
+    Info "Installing TranslatorTraining\requirements.txt"
+    Run $venvPython (@("-m", "pip", "install", "--disable-pip-version-check", "-r", (Join-Path $TrainDir "requirements.txt")) + (Get-PipArgs)) "installing the training packages"
+    $out = & $venvPython -c "import torch, sentencepiece, numpy, sacrebleu, requests, httpx; print('torch', torch.__version__)"
+    if ($LASTEXITCODE -ne 0) { Fail "the training packages cannot be imported" }
+    Ok "packages work ($out)"
+}
+
 function Install-GpuEnv {
-    Step "GPU training environment (TranslatorService\.venv-gpu)"
+    Step "GPU training environment (TranslatorTraining\.venv-gpu)"
     $gpuPython = Join-Path $VenvGpu "Scripts\python.exe"
     if (-not (Test-Path $gpuPython)) {
         $found = Find-Python
         if (-not $found) { Fail "Python 3.11 or newer was not found" }
         $pre = @($found | Select-Object -Skip 1 -First ($found.Count - 2))
-        Run $found[0] ($pre + @("-m", "venv", $VenvGpu)) "creating .venv-gpu"
+        Run $found[0] ($pre + @("-m", "venv", $VenvGpu)) "creating TranslatorTraining\.venv-gpu"
         Ok "created .venv-gpu"
     } else {
         Ok ".venv-gpu already exists"
@@ -202,11 +217,11 @@ function Install-GpuEnv {
     $pipArgs = @()
     if ($Proxy) { $pipArgs = @("--proxy", $Proxy) }
     if ($Wheels) {
-        Run $gpuPython (@("-m", "pip", "install", "--disable-pip-version-check", "--no-index", "--find-links", $Wheels, "torch", "sentencepiece", "numpy", "sacrebleu", "requests")) "installing GPU packages from the wheel folder"
+        Run $gpuPython (@("-m", "pip", "install", "--disable-pip-version-check", "--no-index", "--find-links", $Wheels, "torch", "sentencepiece", "numpy", "sacrebleu", "requests", "httpx")) "installing GPU packages from the wheel folder"
     } else {
         Info "Installing PyTorch with CUDA 12.6 (about 2.5 GB download)"
         Run $gpuPython (@("-m", "pip", "install", "--disable-pip-version-check", "torch", "--index-url", $TorchCudaIndex) + $pipArgs) "installing CUDA PyTorch"
-        Run $gpuPython (@("-m", "pip", "install", "--disable-pip-version-check", "sentencepiece", "numpy", "sacrebleu", "requests") + $pipArgs) "installing training packages"
+        Run $gpuPython (@("-m", "pip", "install", "--disable-pip-version-check", "sentencepiece", "numpy", "sacrebleu", "requests", "httpx") + $pipArgs) "installing training packages"
     }
     $out = & $gpuPython -c "import torch; print(torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'none')"
     if ($out -eq "none") { Warn "PyTorch cannot see a CUDA GPU (no NVIDIA GPU or driver). Training will use the CPU." }
@@ -297,7 +312,14 @@ function Install-DesktopApp {
 
 if (-not $SkipPython) {
     Install-PythonEnv
+    if ($Training) { Install-TrainingEnv }
     if ($Gpu) { Install-GpuEnv }
+    if ($ServerExe) {
+        Step "Bundled server exe (build_server_exe.cmd)"
+        $buildArgs = @()
+        if ($Proxy) { $buildArgs = @("--proxy", $Proxy) }
+        Run (Join-Path $Root "build_server_exe.cmd") $buildArgs "building TranslatorServer.exe"
+    }
 }
 if (-not $SkipDotnet) { Install-DesktopApp }
 
@@ -312,8 +334,15 @@ Write-Host ""
 Write-Host "Setup finished." -ForegroundColor Green
 Write-Host ""
 Write-Host "Start the translator:"
-Write-Host "  1. API, in its own window:   TranslatorService\start_cluster.bat 4"
+if (Test-Path (Join-Path $Service "dist\TranslatorServer\TranslatorServer.exe")) {
+    Write-Host "  1. API, in its own window:   .\run_server.cmd --instances 4     (bundled exe)"
+} else {
+    Write-Host "  1. API, in its own window:   TranslatorServer\start_cluster.bat 4"
+}
 Write-Host "  2. Desktop app (.NET 5):     .\run_desktop.cmd"
+Write-Host ""
+Write-Host "Or build the standalone app, which starts the server by itself:"
+Write-Host "  .\build_desktop_exe.cmd    then run   publish\TranslatorDesktop\TranslatorDesktop.exe"
 Write-Host ""
 Write-Host "Full guide: docs\SETUP_GUIDE.md"
 exit 0

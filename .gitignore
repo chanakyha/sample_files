@@ -8,16 +8,20 @@ __pycache__/
 .venv-gpu/
 venv/
 
-# Large files: training data and checkpoints (regenerate with training/*.py), offline wheel bundles
-# (the trained models in TranslatorService/models/ ARE committed, so the API runs after cloning)
-TranslatorService/training/data/
-TranslatorService/training/checkpoints/
-TranslatorService/training/STOP
-TranslatorService/training/*.stderr.txt
+# Large files: training data and checkpoints (regenerate with TranslatorTraining/*.py), offline wheel bundles
+# (the trained models in TranslatorServer/models/ ARE committed, so the API runs after cloning)
+TranslatorTraining/data/
+TranslatorTraining/checkpoints/
+TranslatorTraining/STOP
+TranslatorTraining/*.stderr.txt
 wheels/
 *.zip
 publish/
-TranslatorService/logs/
+TranslatorServer/logs/
+
+# Bundled server exe (build_server_exe.cmd / PyInstaller)
+TranslatorServer/dist/
+TranslatorServer/build/
 
 # .NET 5 SDK installed by setup.ps1
 .dotnet/

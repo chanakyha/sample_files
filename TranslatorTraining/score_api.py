@@ -1,11 +1,11 @@
 """Translation score measured end to end through the running API (e.g. the load balancer),
 the way clients use it: no source_lang, so automatic language detection is part of the test.
 
-Sends the held-out test set (training/data/prepared/test.tsv) in requests of --batch
+Sends the held-out test set (data/prepared/test.tsv) in requests of --batch
 sentences, several in parallel, and reports BLEU / chrF per corpus and direction plus how
 often the source language was detected correctly.
 
-Usage:  python tools/score_api.py --url http://127.0.0.1:8000
+Usage:  python score_api.py --url http://127.0.0.1:8000
 """
 
 from __future__ import annotations
@@ -19,8 +19,8 @@ from pathlib import Path
 import httpx
 import sacrebleu
 
-SERVICE = Path(__file__).resolve().parent.parent
-TEST = SERVICE / "training" / "data" / "prepared" / "test.tsv"
+ROOT = Path(__file__).resolve().parent
+TEST = ROOT / "data" / "prepared" / "test.tsv"
 
 
 async def main() -> None:

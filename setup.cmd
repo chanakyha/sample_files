@@ -33,10 +33,11 @@ echo.
 echo   --proxy URL                    proxy for all downloads, e.g. http://proxy.corp:8080
 echo                                  or http://user:password@proxy.corp:8080
 echo   --proxyusedefaultcredentials   sign in to the proxy with your Windows account
-echo   --training                     also install the packages for retraining
-echo   --gpu                          also create .venv-gpu with CUDA PyTorch for GPU training
+echo   --training                     also create TranslatorTraining\.venv for retraining
+echo   --gpu                          also create TranslatorTraining\.venv-gpu (CUDA PyTorch)
+echo   --serverexe                    also build the bundled TranslatorServer.exe
 echo   --wheels FOLDER                install Python packages from wheel files, offline
 echo   --runtests                     run the Python tests at the end
-echo   --recreate                     recreate TranslatorService\.venv
+echo   --recreate                     recreate the Python environments
 echo   --skippython / --skipdotnet    skip that part
 exit /b 0

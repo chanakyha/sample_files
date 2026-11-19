@@ -22,6 +22,13 @@ namespace TranslatorDesktop
         List<List<double>> Confidence,
         List<List<bool>>? Translated);
 
+    public sealed record DetectRequest(List<string> Text);
+
+    /// <summary>Per text: language code ("und" = no letters), English name, confidence, and
+    /// whether the model can translate from it.</summary>
+    public sealed record DetectResponse(
+        List<string> DetectedLang, List<string> Language, List<double> Confidence, List<bool> Translatable);
+
     /// <summary>Languages the model can translate between, and languages it can detect.</summary>
     public sealed record LanguagesInfo(
         Dictionary<string, string> Languages, Dictionary<string, string>? Detectable);
@@ -55,7 +62,7 @@ namespace TranslatorDesktop
         }
     }
 
-    /// <summary>HTTP client for the TranslatorService REST API (a separate process).</summary>
+    /// <summary>HTTP client for the translator REST API (TranslatorServer) (a separate process).</summary>
     public sealed class TranslatorApi : IDisposable
     {
         private static readonly JsonSerializerOptions Json = new()
@@ -129,6 +136,33 @@ namespace TranslatorDesktop
                         $"Translation failed ({(int)response.StatusCode}): {ExtractDetail(body)}");
                 }
                 return await response.Content.ReadFromJsonAsync<TranslateResponse>(Json, ct)
+                    ?? throw new TranslatorApiException("Empty response from translation service");
+            }
+        }
+
+        /// <summary>Detects the language of each text (no translation).</summary>
+        public async Task<DetectResponse> DetectAsync(IReadOnlyList<string> texts, CancellationToken ct = default)
+        {
+            HttpResponseMessage response;
+            try
+            {
+                response = await _http.PostAsJsonAsync("/detect", new DetectRequest(texts.ToList()), Json, ct);
+            }
+            catch (HttpRequestException e)
+            {
+                throw new TranslatorApiException(
+                    $"Translation service not reachable at {BaseAddress}: {e.Message}");
+            }
+
+            using (response)
+            {
+                if (!response.IsSuccessStatusCode)
+                {
+                    var body = await response.Content.ReadAsStringAsync(ct);
+                    throw new TranslatorApiException(
+                        $"Language detection failed ({(int)response.StatusCode}): {ExtractDetail(body)}");
+                }
+                return await response.Content.ReadFromJsonAsync<DetectResponse>(Json, ct)
                     ?? throw new TranslatorApiException("Empty response from translation service");
             }
         }

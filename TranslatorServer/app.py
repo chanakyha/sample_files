@@ -1,6 +1,6 @@
 """REST API for the offline translator: our own Transformer translation model (en/es/fr)
 and our own language detector (24 EU languages). Both are trained with the scripts in
-training/ and loaded from models/; nothing is downloaded at runtime.
+../TranslatorTraining/ and loaded from models/; nothing is downloaded at runtime.
 
 Run one instance:   uvicorn app:app --host 127.0.0.1 --port 8000   (or start_api.bat)
 Run several behind the load balancer:  python cluster.py --instances 3   (or start_cluster.bat)
@@ -179,7 +179,7 @@ def health():
     return {
         "status": "ok" if ready else "model_missing",
         "instance": INSTANCE,
-        "model": "own Transformer (training/train_nmt.py)",
+        "model": "own Transformer (TranslatorTraining/train_nmt.py)",
         "model_path": str(translator.path),
         "model_loaded": translator.loaded,
         "training": translator.info,
@@ -237,4 +237,40 @@ async def translate(req: TranslateRequest, request: Request):
     return TranslateResponse(
         target_lang=target, translation=translation, detected_lang=langs,
         confidence=confs, translated=done,
+    )
+
+
+class DetectRequest(BaseModel):
+    text: list[str] = Field(..., min_length=1, description="Texts whose language to detect")
+
+
+class DetectResponse(BaseModel):
+    detected_lang: list[str] = Field(..., description="ISO 639-1 code per text ('und' = no letters)")
+    language: list[str] = Field(..., description="English name of the detected language")
+    confidence: list[float] = Field(..., description="Detection confidence (0-1)")
+    translatable: list[bool] = Field(..., description="True when the model can translate from it")
+
+
+@app.post("/detect", response_model=DetectResponse)
+async def detect(req: DetectRequest, request: Request):
+    """Language detection only (no translation), e.g. to show the language of a text as soon
+    as it is entered."""
+    if len(req.text) > MAX_SENTENCES:
+        raise HTTPException(
+            status_code=413, detail=f"Too many texts ({len(req.text)}); limit is {MAX_SENTENCES}"
+        )
+    try:
+        detections = await run_in_threadpool(detector.detect_many, req.text)
+    except ModelNotFound as e:
+        raise HTTPException(status_code=503, detail=str(e))
+    langs = [d.lang if _has_letters(t) else UNDETERMINED for t, d in zip(req.text, detections)]
+    logger.info("detected %d text(s)", len(req.text), extra={"fields": {
+        "request_id": request.state.request_id, "texts": len(req.text),
+        "detected": dict(Counter(langs))}})
+    supported = set(translator.languages)
+    return DetectResponse(
+        detected_lang=langs,
+        language=[LANGUAGES.get(l, "unknown") for l in langs],
+        confidence=[d.confidence if l != UNDETERMINED else 0.0 for l, d in zip(langs, detections)],
+        translatable=[l in supported for l in langs],
     )

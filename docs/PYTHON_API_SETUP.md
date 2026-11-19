@@ -1,10 +1,16 @@
 # Python Translator API: setup and running
 
+> **In plain words:** the API is the translation server, the program that does the actual work
+> in the background. The desktop app (or any other program) sends it a text and gets back the
+> language and the translation. This document explains how to install it, start it and talk to it.
+> How detection and translation work inside is explained in [HOW_IT_WORKS.md](HOW_IT_WORKS.md).
+
 The API translates text between **English, Spanish and French** (all 6 directions) and
 automatically detects the language of each sentence among the **24 official EU languages**.
 It runs fully offline with our own trained models.
 
-Everything here happens in the `TranslatorService/` folder. To build the desktop client, see
+Everything here happens in the `TranslatorServer/` folder (the training scripts are in
+`TranslatorTraining/`). To build the desktop client, see
 [DOTNET_APP_SETUP.md](DOTNET_APP_SETUP.md). To train the models yourself, see
 [MODEL_TRAINING.md](MODEL_TRAINING.md). For how the parts work together, see
 [ARCHITECTURE.md](ARCHITECTURE.md).
@@ -13,16 +19,16 @@ Everything here happens in the `TranslatorService/` folder. To build the desktop
 
 ## 1. Requirements
 
-| Item | Version used | Notes |
-|------|--------------|-------|
-| Windows 10/11 x64 | Windows 11 | Linux/macOS also work (use the `uvicorn` / `python` commands instead of the `.bat` files) |
-| Python | 3.14.7 (3.11+ works) | https://www.python.org/downloads/; tick "Add python.exe to PATH" |
-| CPU | 4 cores, 8 GB RAM | No GPU needed to run the API |
+| Item | Requirement | Notes |
+|------|-------------|-------|
+| Operating system | Windows 10/11 x64 | Linux/macOS also work (use the `uvicorn` / `python` commands instead of the `.bat` files) |
+| Python | 3.11 or newer | https://www.python.org/downloads/; tick "Add python.exe to PATH". Not needed for the bundled exe. |
+| Processor and memory | 4 cores and 8 GB RAM recommended | No graphics card needed to run the API |
 | Disk | ~1.5 GB | Python environment ~1.3 GB (PyTorch) + models 86 MB |
 
-Installed Python packages ([TranslatorService/requirements.txt](../TranslatorService/requirements.txt)):
+Installed Python packages ([TranslatorServer/requirements.txt](../TranslatorServer/requirements.txt)):
 
-| Package | Version used | Purpose |
+| Package | Version | Purpose |
 |---------|--------------|---------|
 | fastapi | 0.162.4 | REST API framework |
 | uvicorn[standard] | 0.54.0 | HTTP server |
@@ -34,8 +40,10 @@ Installed Python packages ([TranslatorService/requirements.txt](../TranslatorSer
 
 ## 2. Install
 
+`setup.cmd --skipdotnet` (repository root) does all of this. By hand:
+
 ```powershell
-cd TranslatorService
+cd TranslatorServer
 python -m venv .venv
 .venv\Scripts\activate
 python -m pip install --upgrade pip
@@ -46,12 +54,12 @@ The default `torch` wheel on Windows is the CPU build. That is all the API needs
 
 ### Models
 
-The API loads two model folders from `TranslatorService/models/`:
+The API loads two model folders from `TranslatorServer/models/`:
 
 | Folder | Files | Size | Made by |
 |--------|-------|------|---------|
-| `models/nmt-en-es-fr/` | `model.pt` (weights, fp16), `spm.model` (tokenizer), `config.json` | 22 MB | [training/train_nmt.py](../TranslatorService/training/train_nmt.py) |
-| `models/lid/` | `lid.pt` (weights, fp16), `config.json` | 65 MB | [training/train_lid.py](../TranslatorService/training/train_lid.py) |
+| `models/nmt-en-es-fr/` | `model.pt` (weights, fp16), `spm.model` (tokenizer), `config.json` | 22 MB | [TranslatorTraining/train_nmt.py](../TranslatorTraining/train_nmt.py) |
+| `models/lid/` | `lid.pt` (weights, fp16), `config.json` | 65 MB | [TranslatorTraining/train_lid.py](../TranslatorTraining/train_lid.py) |
 
 The trained models are in the repository, so the API works right after cloning. To create them
 from scratch, follow [MODEL_TRAINING.md](MODEL_TRAINING.md). To use models stored elsewhere,
@@ -118,7 +126,42 @@ curl http://127.0.0.1:8000/health
 curl http://127.0.0.1:8000/lb/status          # cluster only
 ```
 
-Interactive API documentation is at http://127.0.0.1:8000/docs.
+Interactive API documentation is at http://127.0.0.1:8000/docs. It lists every endpoint and
+lets you try them in the browser:
+
+![The API documentation page](images/api_docs.png)
+
+### c) Bundled exe: no Python needed
+
+`build_server_exe.cmd` (repository root) packs the server, Python, PyTorch and the models into one
+folder with an exe, built with PyInstaller:
+
+```powershell
+.\build_server_exe.cmd                          # once; a few minutes; needs TranslatorServer\.venv
+.\build_server_exe.cmd --proxy http://proxy.corp:8080   # if pip needs a proxy to get PyInstaller
+```
+
+Result: `TranslatorServer\dist\TranslatorServer\` (about 580 MB) with `TranslatorServer.exe`,
+`_internal\` (Python and the packages) and `models\`. Copy the whole folder to run it on another
+Windows 10/11 x64 PC; nothing needs to be installed there.
+
+```powershell
+.\run_server.cmd                               # cluster: 2 instances + load balancer on :8000
+.\run_server.cmd --instances 4
+.\run_server.cmd --instances 4 --host 0.0.0.0  # reachable from other machines
+.\run_server.cmd --single --port 8000          # one instance, no load balancer
+TranslatorServer\dist\TranslatorServer\TranslatorServer.exe --help
+```
+
+`run_server.cmd` only starts `TranslatorServer\dist\TranslatorServer\TranslatorServer.exe` with the
+same options. The exe runs the same code as the `.bat` files (`server_main.py` is its entry point):
+the cluster supervisor starts the instances and the load balancer as further
+`TranslatorServer.exe` processes. Models are read from `models\` and logs written to `logs\`, both
+next to the exe; `TRANSLATOR_MODEL_DIR` and `TRANSLATOR_LOG_DIR` override them. After retraining,
+copy the new `TranslatorServer\models\` into the exe folder (or run `build_server_exe.cmd` again).
+
+It is a one-folder build on purpose: the cluster runs several processes of the same exe, and a
+single-file exe would unpack about 580 MB into `%TEMP%` for each of them.
 
 ## 4. Using the API
 
@@ -178,6 +221,7 @@ Invoke-RestMethod http://127.0.0.1:8000/translate -Method Post `
 | Endpoint | Returns |
 |----------|---------|
 | `GET /health` | `status` (`ok` / `model_missing`), instance name, model training info (step, dev BLEU), device, threads, beam size |
+| `POST /detect` | Language detection only: `{"text": ["El motor...", "Das ist gut."]}` → `detected_lang` (`["es", "de"]`, `und` = no letters), `language` (`["Spanish", "German"]`), `confidence`, `translatable` (`[true, false]`). Used by the desktop app when a text is added. |
 | `GET /languages` | `languages`: what can be translated (en, es, fr); `detectable`: the 24 detected languages |
 | `GET /lb/status` | (cluster only) every instance: health, requests in progress, total requests, errors, average latency |
 
@@ -186,7 +230,7 @@ Invoke-RestMethod http://127.0.0.1:8000/translate -Method Post `
 | Variable | Default | Meaning |
 |----------|---------|---------|
 | `TRANSLATOR_HOST` | `127.0.0.1` | Address that `start_api.bat` / the load balancer listens on |
-| `TRANSLATOR_MODEL_DIR` | `TranslatorService/models` | Folder containing `nmt-en-es-fr/` and `lid/` |
+| `TRANSLATOR_MODEL_DIR` | `TranslatorServer/models` (exe: `models\` next to it) | Folder containing `nmt-en-es-fr/` and `lid/` |
 | `TRANSLATOR_BEAM_SIZE` | `4` | Beam search width; `1` = greedy (about 2× faster, slightly worse) |
 | `TRANSLATOR_THREADS` | CPU cores / 2 (cluster: cores / instances) | PyTorch threads per instance |
 | `TRANSLATOR_BATCH_SIZE` | `32` | Sentences translated together |
@@ -195,12 +239,12 @@ Invoke-RestMethod http://127.0.0.1:8000/translate -Method Post `
 | `PRELOAD_MODELS` | `1` | Load the models at startup (`0` = on first request) |
 | `TRANSLATOR_INSTANCES` | `2` | Default instance count for `cluster.py` |
 | `TRANSLATOR_INSTANCE` | `api` | Instance name in logs (set by `cluster.py`) |
-| `TRANSLATOR_LOG_DIR` | `TranslatorService/logs` | Log folder |
+| `TRANSLATOR_LOG_DIR` | `TranslatorServer/logs` (exe: `logs\` next to it) | Log folder |
 | `TRANSLATOR_LOG_LEVEL` | `INFO` | `DEBUG` also logs the health checks |
 
 ## 6. Logs
 
-Each process writes one JSON object per line to `TranslatorService/logs/` and readable lines to
+Each process writes one JSON object per line to `TranslatorServer/logs/` and readable lines to
 the console. Files rotate at 10 MB, keeping 5 old files.
 
 | File | Contents |
@@ -230,19 +274,19 @@ The translated text is never written to the logs; only counts and languages are.
 ## 7. Tests and checks
 
 ```powershell
-.venv\Scripts\python -m pytest -q                   # 38 tests: API end to end + load balancer
+.venv\Scripts\python -m pytest -q                   # 39 tests: API end to end + load balancer
 .venv\Scripts\python tools\loadtest.py              # load test (API must be running)
-.venv\Scripts\python tools\score_api.py             # translation score through the running API
+..\TranslatorTraining\.venv\Scripts\python ..\TranslatorTraining\score_api.py   # translation score through the API
 ```
 
 | File | What it tests |
 |------|---------------|
-| [tests/test_api.py](../TranslatorService/tests/test_api.py) | Detection of all 24 languages, translation in all directions, shape of `string[][]`, validation errors, cache, request id and log entry |
-| [tests/test_loadbalancer.py](../TranslatorService/tests/test_loadbalancer.py) | Even spreading, failover when an instance dies, 503 when none are up, request id forwarding, `/lb/status` (fake instances, no models needed) |
-| [tools/loadtest.py](../TranslatorService/tools/loadtest.py) | Scenarios: ramp (1–64 concurrent), spike, large requests, mixed valid/invalid, soak, chaos (kills instances) |
-| [tools/score_api.py](../TranslatorService/tools/score_api.py) | BLEU / chrF and detection accuracy on the 6,270-sentence test set, through the API |
+| [tests/test_api.py](../TranslatorServer/tests/test_api.py) | Detection of all 24 languages, translation in all directions, shape of `string[][]`, validation errors, cache, request id and log entry |
+| [tests/test_loadbalancer.py](../TranslatorServer/tests/test_loadbalancer.py) | Even spreading, failover when an instance dies, 503 when none are up, request id forwarding, `/lb/status` (fake instances, no models needed) |
+| [tools/loadtest.py](../TranslatorServer/tools/loadtest.py) | Scenarios: ramp (1–64 concurrent), spike, large requests, mixed valid/invalid, soak, chaos (kills instances) |
+| [TranslatorTraining/score_api.py](../TranslatorTraining/score_api.py) | BLEU / chrF and detection accuracy on the 6,270-sentence test set, through the API |
 
-### Measured results (4-core laptop CPU, 4 instances)
+### Measured results (4-core processor, 4 instances)
 
 | Test | Result |
 |------|--------|
@@ -259,6 +303,8 @@ The translated text is never written to the logs; only counts and languages are.
 |---------|-----|
 | `/health` returns `model_missing` | `models/nmt-en-es-fr/` or `models/lid/` is missing: copy them, or train them ([MODEL_TRAINING.md](MODEL_TRAINING.md)) |
 | `Python environment not found` from the `.bat` files | Create `.venv` (section 2) |
+| `run_server.cmd`: `TranslatorServer.exe has not been built yet` | Run `build_server_exe.cmd` first |
+| `build_server_exe.cmd`: `TranslatorServer.exe is running` | Stop the running server (Ctrl+C in its window), then build again |
 | Port 8000 already in use | `start_api.bat 8080` or `cluster.py --port 8080`, and start the app with `--url http://127.0.0.1:8080` |
 | Other PCs cannot connect | `$env:TRANSLATOR_HOST = "0.0.0.0"` (cmd.exe: `set TRANSLATOR_HOST=0.0.0.0`) and open the port in Windows Firewall |
 | Slow under load | Use `start_cluster.bat` with more instances (up to the number of cores), or `TRANSLATOR_BEAM_SIZE=1` |

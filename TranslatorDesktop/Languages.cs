@@ -5,7 +5,7 @@ namespace TranslatorDesktop
 {
     public sealed record Language(string Code, string Name, string NativeName);
 
-    /// <summary>The 24 official EU languages supported by TranslatorService.</summary>
+    /// <summary>The 24 official EU languages supported by the translator API.</summary>
     public static class Languages
     {
         public static readonly IReadOnlyList<Language> All = new List<Language>
